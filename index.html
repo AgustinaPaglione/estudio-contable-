@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paglione Estudio Contable</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#efefed;
+  --tx:#1a1a1a;--tx2:#666;--tx3:#999;
+  --br:#e5e5e3;--br2:#f0f0ee;
+  --blue:#185FA5;--blue-bg:#E6F1FB;
+  --teal-bg:#E1F5EE;--teal:#0F6E56;
+  --amber-bg:#FAEEDA;--amber:#854F0B;
+  --red-bg:#FCEBEB;--red:#A32D2D;
+  --green-bg:#EAF3DE;--green:#3B6D11;
+  --gray-bg:#F1EFE8;--gray:#5F5E5A;
+  --purple-bg:#F0EBFB;--purple:#6B35B8;
+  --r:8px;--rs:5px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--tx);background:var(--bg);height:100vh;overflow:hidden;}
+.app{display:flex;height:100vh;}
+.sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--br);display:flex;flex-direction:column;}
+.sb-header{padding:16px 14px 12px;border-bottom:1px solid var(--br);}
+.sb-logo{font-size:13px;font-weight:700;}
+.sb-sub{font-size:11px;color:var(--tx2);margin-top:2px;}
+.sb-list{flex:1;overflow-y:auto;padding:8px 6px;}
+.sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);padding:8px 10px 4px;display:flex;justify-content:space-between;align-items:center;}
+.sb-add-btn{font-size:14px;font-weight:700;color:var(--blue);cursor:pointer;background:none;border:none;padding:0 4px;}
+.sb-add-btn:hover{opacity:.7;}
+.cb{width:100%;text-align:left;background:transparent;border:none;border-radius:var(--rs);padding:8px 10px;cursor:pointer;margin-bottom:2px;}
+.cb:hover{background:var(--bg3);}
+.cb.active{background:#fff;box-shadow:0 0 0 1px var(--br);}
+.cb-name{font-size:13px;font-weight:500;color:var(--tx);}
+.cb-type{font-size:11px;color:var(--tx2);margin-top:1px;}
+.sb-footer{padding:10px 8px;border-top:1px solid var(--br);}
+.mnav{display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:8px;}
+.mnav button{background:transparent;border:1px solid var(--br);border-radius:var(--rs);padding:4px 10px;cursor:pointer;font-size:13px;}
+.mnav button:hover{background:var(--bg3);}
+.mlabel{font-size:12px;font-weight:600;min-width:90px;text-align:center;}
+.btn-close{width:100%;padding:8px;border:none;background:var(--blue);color:#fff;border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:600;}
+.btn-close:hover{opacity:.88;}
+.btn-close.closed{background:var(--bg3);color:var(--tx2);border:1px solid var(--br);cursor:default;}
+.main{flex:1;overflow-y:auto;padding:24px 28px;}
+.pg-title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px;}
+.pg-meta{font-size:12px;color:var(--tx2);margin-bottom:6px;}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:18px;}
+.badge{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:500;}
+.b-blue{background:var(--blue-bg);color:var(--blue);}
+.b-teal{background:var(--teal-bg);color:var(--teal);}
+.b-amber{background:var(--amber-bg);color:var(--amber);}
+.b-gray{background:var(--gray-bg);color:var(--gray);}
+.b-red{background:var(--red-bg);color:var(--red);}
+.b-green{background:var(--green-bg);color:var(--green);}
+.b-purple{background:var(--purple-bg);color:var(--purple);}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.metric{background:var(--bg2);border:1px solid var(--br2);border-radius:var(--r);padding:14px 16px;}
+.metric-label{font-size:11px;color:var(--tx2);margin-bottom:5px;}
+.metric-val{font-size:22px;font-weight:700;}
+.metric-val.green{color:var(--green);}
+.metric-val.amber{color:var(--amber);}
+.metric-val.red{color:var(--red);}
+.section{margin-bottom:20px;}
+.sec-title{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--br2);display:flex;align-items:center;justify-content:space-between;}
+.item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border:1px solid var(--br2);border-radius:var(--r);margin-bottom:6px;cursor:pointer;}
+.item:hover{background:var(--bg2);}
+.item.done{opacity:.5;}
+.item.locked{cursor:default;}
+.chk{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--br);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.item.done .chk{background:var(--green);border-color:var(--green);}
+.chk-i{font-size:12px;color:#fff;display:none;font-weight:700;}
+.item.done .chk-i{display:block;}
+.item-info{flex:1;}
+.item-name{font-size:13px;font-weight:500;}
+.item.done .item-name{text-decoration:line-through;color:var(--tx2);}
+.item-desc{font-size:11px;color:var(--tx2);margin-top:2px;}
+.item-tag{font-size:11px;padding:2px 9px;border-radius:var(--rs);background:var(--bg2);color:var(--tx2);flex-shrink:0;font-weight:500;}
+.item-tag.hoy{background:var(--red-bg);color:var(--red);}
+.item-tag.pronto{background:var(--amber-bg);color:var(--amber);}
+.item-actions{display:flex;gap:4px;flex-shrink:0;}
+.pitem{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:#fff;border:1px solid var(--br2);border-radius:var(--r);margin-bottom:6px;cursor:pointer;}
+.pitem:hover{background:var(--bg2);}
+.pitem.done{opacity:.5;}
+.pchk{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--br);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.pitem.done .pchk{background:var(--green);border-color:var(--green);}
+.pitem.done .item-name{text-decoration:line-through;color:var(--tx2);}
+.sub-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin:10px 0 5px 2px;}
+.plan-card{background:#fff;border:1px solid var(--br2);border-radius:var(--r);padding:14px 16px;margin-bottom:8px;}
+.plan-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.plan-name{font-size:13px;font-weight:600;}
+.plan-meta{font-size:11px;color:var(--tx2);}
+.pbar{height:6px;background:var(--bg3);border-radius:99px;overflow:hidden;margin-bottom:8px;}
+.pfill{height:100%;border-radius:99px;}
+.pf-blue{background:#378ADD;}.pf-teal{background:#1D9E75;}.pf-amber{background:#BA7517;}
+.plan-ftr{display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);}
+.plan-ftr strong{color:var(--tx);}
+.resumen-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.rcard{background:var(--bg2);border:1px solid var(--br2);border-radius:var(--r);padding:10px 12px;text-align:center;}
+.rval{font-size:17px;font-weight:700;}
+.rlabel{font-size:10px;color:var(--tx2);margin-top:2px;}
+.ctable{width:100%;border-collapse:collapse;font-size:12px;}
+.ctable th{font-size:11px;font-weight:600;color:var(--tx2);text-align:center;padding:8px 10px;background:var(--bg2);border-bottom:1px solid var(--br);}
+.ctable th:first-child{text-align:left;}
+.ctable td{padding:9px 10px;border-bottom:1px solid var(--br2);vertical-align:middle;text-align:center;}
+.ctable td:first-child{text-align:left;}
+.ctable tr:hover:not(.trow){background:var(--bg2);}
+.ctable tr.trow{background:var(--bg2);font-weight:700;}
+.ebadge{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:500;}
+.cbwrap{display:flex;align-items:center;justify-content:center;}
+.cbwrap input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--green);}
+.ipc-alert{background:var(--blue-bg);border-left:3px solid var(--blue);border-radius:0 var(--rs) var(--rs) 0;padding:9px 13px;font-size:12px;color:#0D3B6F;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.btn-sm{font-size:11px;padding:4px 11px;border-radius:var(--rs);border:1px solid var(--br);background:transparent;cursor:pointer;color:var(--tx2);}
+.btn-sm:hover{background:var(--bg3);}
+.btn-primary{font-size:12px;padding:7px 16px;border-radius:var(--rs);border:none;background:var(--blue);color:#fff;cursor:pointer;font-weight:500;}
+.btn-primary:hover{opacity:.9;}
+.btn-danger{font-size:11px;padding:4px 9px;border-radius:var(--rs);border:none;background:var(--red-bg);color:var(--red);cursor:pointer;}
+.btn-ghost{font-size:11px;padding:4px 9px;border-radius:var(--rs);border:none;background:transparent;color:var(--tx2);cursor:pointer;}
+.btn-ghost:hover{background:var(--bg3);}
+.closed-banner{background:var(--green-bg);border:1px solid #A8D178;border-radius:var(--r);padding:9px 14px;font-size:12px;color:var(--green);margin-bottom:16px;font-weight:500;}
+.backup-bar{display:flex;gap:8px;align-items:center;padding:10px 14px;background:var(--bg2);border:1px solid var(--br2);border-radius:var(--r);margin-bottom:20px;flex-wrap:wrap;}
+.backup-title{font-size:12px;font-weight:600;color:var(--tx2);}
+.backup-info{font-size:11px;color:var(--tx3);margin-left:auto;}
+.hist-card{background:#fff;border:1px solid var(--br2);border-radius:var(--r);padding:16px 18px;margin-bottom:10px;}
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.hist-month{font-size:15px;font-weight:700;}
+.hist-meta{font-size:11px;color:var(--tx2);}
+.hist-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.hmet{text-align:center;padding:8px;background:var(--bg2);border-radius:var(--rs);}
+.hmet-val{font-size:16px;font-weight:700;}
+.hmet-label{font-size:10px;color:var(--tx2);margin-top:2px;}
+.hist-actions{display:flex;gap:6px;justify-content:flex-end;}
+.hist-empty{color:var(--tx2);font-size:13px;padding:40px 0;text-align:center;line-height:2;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:20px;}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.cal-day-name{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--tx3);text-align:center;padding:4px 0;}
+.cal-day{min-height:72px;background:#fff;border:1px solid var(--br2);border-radius:var(--rs);padding:5px 6px;font-size:11px;vertical-align:top;}
+.cal-day.empty{background:var(--bg2);border-color:transparent;}
+.cal-day.today{border-color:var(--blue);border-width:2px;}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:3px;}
+.cal-day.today .cal-day-num{color:var(--blue);}
+.cal-event{font-size:10px;font-weight:500;padding:2px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;}
+.ce-blue{background:var(--blue-bg);color:var(--blue);}
+.ce-amber{background:var(--amber-bg);color:var(--amber);}
+.ce-green{background:var(--green-bg);color:var(--green);}
+.ce-red{background:var(--red-bg);color:var(--red);}
+.ce-purple{background:var(--purple-bg);color:var(--purple);}
+.ce-teal{background:var(--teal-bg);color:var(--teal);}
+.hon-card{background:#fff;border:1px solid var(--br2);border-radius:var(--r);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.hon-info{flex:1;}
+.hon-name{font-size:13px;font-weight:600;}
+.hon-detail{font-size:11px;color:var(--tx2);margin-top:2px;}
+.hon-monto{font-size:16px;font-weight:700;color:var(--green);}
+.hon-badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--amber-bg);color:var(--amber);font-weight:500;margin-left:8px;}
+.hon-cobrado{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--green-bg);color:var(--green);font-weight:500;margin-left:8px;}
+.hon-right{display:flex;align-items:center;gap:10px;}
+.hon-total{background:var(--bg2);border:1px solid var(--br2);border-radius:var(--r);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.hon-total-label{font-size:12px;color:var(--tx2);}
+.hon-total-val{font-size:18px;font-weight:700;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:var(--r);padding:22px;width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.18);}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--tx2);margin-bottom:18px;}
+.fg{margin-bottom:14px;}
+.fg label{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:5px;display:block;}
+.fg input,.fg textarea,.fg select{width:100%;padding:8px 11px;border:1px solid var(--br);border-radius:var(--rs);font-size:13px;color:var(--tx);background:#fff;font-family:inherit;}
+.fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--blue);}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-ftr{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+.hidden{display:none;}
+.repeat-block{background:var(--bg2);border:1px solid var(--br2);border-radius:var(--r);padding:12px;margin-bottom:10px;position:relative;}
+.repeat-block .btn-danger{position:absolute;top:8px;right:8px;}
+.add-repeat-btn{width:100%;padding:8px;border:1px dashed var(--br);border-radius:var(--rs);background:transparent;cursor:pointer;color:var(--tx2);font-size:12px;margin-bottom:14px;}
+.add-repeat-btn:hover{background:var(--bg2);}
+.step-tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--br2);}
+.step-tab{padding:8px 14px;font-size:12px;font-weight:600;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;}
+.step-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--tx2);}
+.empty-state-title{font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px;}
+.empty-state-desc{font-size:13px;margin-bottom:16px;}
+</style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAKOuXJmTxdW5a3oqp_109Rc3gFPcyleOU",
+    authDomain: "estudio-paglione.firebaseapp.com",
+    projectId: "estudio-paglione",
+    storageBucket: "estudio-paglione.firebasestorage.app",
+    messagingSenderId: "1020312127288",
+    appId: "1:1020312127288:web:e60d4fd11f14daa43423cd"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const docRef = doc(db, "estudio", "data");
+
+  // Expose to the rest of the (non-module) script via window
+  window.__fb = { db, docRef, getDoc, setDoc, onSnapshot };
+  window.__fbReady = true;
+</script>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">Paglione Estudio Contable</div>
+      <div class="sb-sub" id="sb-sub"></div>
+    </div>
+    <div class="sb-list">
+      <div class="sb-label">Clientes <button class="sb-add-btn" onclick="openClientWizard(null)" title="Agregar cliente">+</button></div>
+      <div id="client-list"></div>
+      <div class="sb-label" style="margin-top:8px;">Vistas</div>
+      <button class="cb" id="btn-cal" onclick="selectView('calendario')">
+        <div class="cb-name">Calendario</div>
+        <div class="cb-type">Vision mensual</div>
+      </button>
+      <button class="cb" id="btn-hist" onclick="selectView('historial')">
+        <div class="cb-name">Historial</div>
+        <div class="cb-type">Meses cerrados</div>
+      </button>
+    </div>
+    <div class="sb-footer">
+      <div class="mnav">
+        <button onclick="changeMonth(-1)">&#8249;</button>
+        <span class="mlabel" id="month-label"></span>
+        <button onclick="changeMonth(1)">&#8250;</button>
+      </div>
+      <button class="btn-close" id="btn-cerrar" onclick="cerrarMes()">Cerrar mes</button>
+    </div>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<!-- MODAL: Cartera item (Italica) -->
+<div class="overlay hidden" id="modal-cli">
+  <div class="modal">
+    <div class="modal-title" id="mc-title">Cliente</div>
+    <div class="fg"><label>Nombre del cliente</label><input id="mc-nombre" placeholder="Empresa XYZ"></div>
+    <div class="fg"><label>Monto mensual ($)</label><input id="mc-monto" type="number" placeholder="380000"></div>
+    <div class="fg"><label>Ultima actualizacion IPC (AAAA-MM)</label><input id="mc-fecha" placeholder="2026-04"></div>
+    <input type="hidden" id="mc-id">
+    <div class="modal-ftr">
+      <button class="btn-sm" onclick="closeModal('modal-cli')">Cancelar</button>
+      <button class="btn-primary" onclick="saveCartera()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Backup -->
+<div class="overlay hidden" id="modal-backup">
+  <div class="modal">
+    <div class="modal-title">Importar backup</div>
+    <div class="fg"><label>Pega el contenido del archivo .json</label><textarea id="backup-txt" rows="8" style="font-family:monospace;font-size:11px;resize:vertical;" placeholder='{"cartera":[...]}'></textarea></div>
+    <div class="modal-ftr">
+      <button class="btn-sm" onclick="closeModal('modal-backup')">Cancelar</button>
+      <button class="btn-primary" onclick="importBackup()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Client Wizard (nuevo / editar cliente completo) -->
+<div class="overlay hidden" id="modal-wizard">
+  <div class="modal" style="width:600px;">
+    <div class="modal-title" id="wiz-title">Nuevo cliente</div>
+    <div class="modal-sub">Configura los datos, vencimientos, impuestos y honorarios del cliente</div>
+
+    <div class="step-tabs">
+      <div class="step-tab active" data-step="1" onclick="wizGoStep(1)">1. Datos</div>
+      <div class="step-tab" data-step="2" onclick="wizGoStep(2)">2. Vencimientos</div>
+      <div class="step-tab" data-step="3" onclick="wizGoStep(3)">3. Honorarios</div>
+    </div>
+
+    <!-- STEP 1: datos basicos -->
+    <div class="step-panel active" id="wiz-step-1">
+      <div class="fg"><label>Nombre del cliente</label><input id="wz-nombre" placeholder="Ej: Juan Perez SRL"></div>
+      <div class="fg-row">
+        <div class="fg"><label>CUIT</label><input id="wz-cuit" placeholder="20-12345678-9"></div>
+        <div class="fg"><label>Tipo de contribuyente</label>
+          <select id="wz-tipo">
+            <option value="ri">Responsable Inscripto</option>
+            <option value="mono">Monotributista</option>
+            <option value="agencia">Agencia / Multiples titulares</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>Impuestos / regimenes en los que esta inscripto</label>
+        <input id="wz-impuestos" placeholder="Ej: IVA, IIBB, Ganancias, Bienes Personales (separados por coma)">
+      </div>
+      <div class="fg"><label>Notas generales (opcional)</label>
+        <textarea id="wz-notas" rows="2" placeholder="Cualquier dato relevante del cliente"></textarea>
+      </div>
+    </div>
+
+    <!-- STEP 2: vencimientos -->
+    <div class="step-panel" id="wiz-step-2">
+      <div id="wz-venc-list"></div>
+      <button class="add-repeat-btn" onclick="wizAddVenc()">+ Agregar vencimiento</button>
+    </div>
+
+    <!-- STEP 3: honorarios -->
+    <div class="step-panel" id="wiz-step-3">
+      <div class="fg"><label>Honorario mensual ($)</label><input id="wz-hon-monto" type="number" placeholder="150000"></div>
+      <div class="fg"><label>Dia de vencimiento del cobro</label><input id="wz-hon-dia" type="number" min="1" max="31" placeholder="10"></div>
+      <div class="fg">
+        <label><input type="checkbox" id="wz-hon-semestral" style="width:auto;display:inline-block;margin-right:6px;"> Tiene actualizacion semestral por IPC</label>
+      </div>
+      <div class="fg" id="wz-hon-ipc-wrap" style="display:none;">
+        <label>Mes de la proxima actualizacion (AAAA-MM)</label>
+        <input id="wz-hon-ipc-mes" placeholder="2026-12">
+      </div>
+    </div>
+
+    <input type="hidden" id="wz-edit-id">
+    <div class="modal-ftr">
+      <button class="btn-sm" onclick="closeModal('modal-wizard')">Cancelar</button>
+      <button class="btn-danger hidden" id="wz-delete-btn" onclick="wizDeleteClient()">Eliminar cliente</button>
+      <button class="btn-primary" onclick="wizSaveClient()">Guardar cliente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var today = new Date();
+var currentMonth = today.getMonth();
+var currentYear = today.getFullYear();
+var activeClient = 0;
+var activeView = 'client';
+var S = {};
+var wizStep = 1;
+var wizVencCounter = 0;
+
+/* ============== CLIENTES BASE (built-in) ============== */
+var BASE_CLIENTS = [
+  {
+    id:'alfonzo', name:'Alfonzo Andres Victor', type:'Resp. Inscripto', cuit:'20-10583036-0', builtin:true,
+    badges:[{l:'IVA Simple',c:'b-blue'},{l:'Ganancias simplificado',c:'b-teal'},{l:'BP simplificado',c:'b-teal'},{l:'Autonomo activo',c:'b-amber'},{l:'Sin nomina',c:'b-gray'}],
+    venc:[
+      {id:'aut',name:'Aportes autonomos',desc:'Categoria jubilado activo - CUIT termina en 0',dia:5},
+      {id:'iibb',name:'Cuota IIBB - ATER',desc:'Plan de pagos IIBB Sgo. del Estero',dia:10},
+      {id:'osecac',name:'Cuota OSECAC',desc:'Plan de pagos diferencia aportes 2025',dia:10},
+      {id:'morat',name:'Cuota moratoria AFIP',desc:'24 cuotas - vence octubre 2026',dia:16},
+      {id:'iva',name:'DDJJ IVA - IVA Simple',desc:'Declaracion jurada mensual - CUIT termina en 0',dia:20}
+    ],
+    pend:[
+      {id:'f931',lv:'urgente',c:'b-red',n:'Rectificar F.931',d:'Jun-Oct 2025 - diferencia remuneracion Maestranza A (Emilio Bourquim)'},
+      {id:'ant',lv:'urgente',c:'b-red',n:'Verificar anticipos Ganancias',d:'Confirmar cuotas activas en AFIP. Evaluar reduccion F.378'},
+      {id:'aut-d',lv:'urgente',c:'b-red',n:'Verificar deuda autonomos',d:'Confirmar si tiene aportes impagos acumulados'},
+      {id:'aut-c',lv:'importante',c:'b-amber',n:'Confirmar categoria autonomos',d:'Verificar que tribute como jubilado activo (Cat. I reducida)'},
+      {id:'aut-r',lv:'importante',c:'b-amber',n:'Recategorizacion anual autonomos',d:'Verificar recategorizacion de mayo'},
+      {id:'gan',lv:'importante',c:'b-amber',n:'Primera presentacion Ganancias simplificado',d:'Nuevo regimen - aun no presento'},
+      {id:'bp',lv:'importante',c:'b-amber',n:'Primera presentacion Bienes Personales simplificado',d:'Nuevo regimen - aun no presento'},
+      {id:'sipa',lv:'a evaluar',c:'b-gray',n:'Verificar impacto SIPA/ANSES',d:'Al rectificar F.931 puede surgir diferencia de aportes'}
+    ],
+    planes:[
+      {id:'ip',n:'Plan IIBB',cl:'pf-blue',p:1,t:12,v:10,fin:'Mayo 2027'},
+      {id:'op',n:'Plan OSECAC',cl:'pf-teal',p:3,t:12,v:10,fin:'Marzo 2027'},
+      {id:'mp',n:'Moratoria AFIP',cl:'pf-amber',p:18,t:24,v:16,fin:'Octubre 2026'}
+    ],
+    tipo:'ri'
+  },
+  {
+    id:'italica', name:'Italica', type:'Agencia - Dos monotributistas', cuit:'Dos CUITs', builtin:true,
+    badges:[{l:'Monotributo x2',c:'b-purple'},{l:'IIBB x2',c:'b-blue'},{l:'Cartera clientes',c:'b-teal'},{l:'IPC trimestral',c:'b-amber'}],
+    venc:[
+      {id:'fact',name:'Facturacion cartera',desc:'Emitir facturas y avisos de cobro',dia:1},
+      {id:'m1',name:'Monotributo - Socia 1',desc:'Pago mensual - antes del dia 12',dia:12},
+      {id:'m2',name:'Monotributo - Socia 2',desc:'Pago mensual - antes del dia 12',dia:12},
+      {id:'i1',name:'DDJJ IIBB - Socia 1',desc:'Presentacion mensual IIBB',dia:15},
+      {id:'i2',name:'DDJJ IIBB - Socia 2',desc:'Presentacion mensual IIBB',dia:15},
+      {id:'v1',name:'VEP - Socia 1',desc:'Pago VEP IIBB',dia:15},
+      {id:'v2',name:'VEP - Socia 2',desc:'Pago VEP IIBB',dia:15}
+    ],
+    pend:[], planes:[], tipo:'agencia',
+    carteraDefault:[
+      {id:'nc',nombre:'Nuevo Centro',monto:380000,ua:'2026-06'},
+      {id:'ebi',nombre:'EBI',monto:415000,ua:'2026-04'},
+      {id:'bir',nombre:'Birraz',monto:1630000,ua:'2025-12'},
+      {id:'mr',nombre:'Mi Rinon',monto:267000,ua:'2026-04'},
+      {id:'moi',nombre:'Moi',monto:465000,ua:'2026-04'},
+      {id:'mym',nombre:'MyM',monto:440000,ua:'2026-02'},
+      {id:'ori',nombre:'Origenes',monto:372000,ua:'2026-06'},
+      {id:'mc',nombre:'Malas Companias',monto:250000,ua:'2026-04'},
+      {id:'kic',nombre:'Kickstart',monto:543000,ua:'2026-06'},
+      {id:'eco',nombre:'Ecoclean',monto:680000,ua:'2026-06'}
+    ]
+  },
+  {
+    id:'nacho', name:'Nacho (Medico)', type:'Monotributista', cuit:'-', builtin:true,
+    badges:[{l:'Monotributo',c:'b-purple'},{l:'IIBB mensual',c:'b-blue'},{l:'Conducta fiscal bimestral',c:'b-amber'},{l:'Facturacion variable',c:'b-gray'}],
+    venc:[
+      {id:'freq',name:'Solicitar comprobantes a Nacho',desc:'Pedirle comprobantes del mes para facturar',dia:1},
+      {id:'fem',name:'Emitir facturacion de Nacho',desc:'Segun comprobantes recibidos',dia:5},
+      {id:'iibb',name:'DDJJ IIBB',desc:'Presentacion mensual IIBB',dia:15},
+      {id:'vep',name:'VEP monotributo',desc:'Enviar VEP para pago cuota mensual',dia:20}
+    ],
+    pend:[{id:'cond',lv:'importante',c:'b-amber',n:'Solicitud conducta fiscal',d:'Bimestral - proxima: julio 2026'}],
+    planes:[], tipo:'mono'
+  }
+];
+
+var HONORARIOS_BASE = [
+  {id:'hon-italica', cliente:'Italica', clientId:'italica', monto:150000, vence:10, ipcMes:'2026-07', semestral:true},
+  {id:'hon-nacho',   cliente:'Nacho',   clientId:'nacho',   monto:80000,  vence:10, ipcMes:null,       semestral:false}
+];
+
+function getAllClients() {
+  return S.allClients || [];
+}
+function getAllHonorarios() {
+  return S.allHonorarios || [];
+}
+
+/* ============== STORAGE (Firebase Firestore + localStorage fallback) ============== */
+var fbSyncStatus = 'connecting'; // connecting | synced | offline | error
+var fbUnsubscribe = null;
+var saveTimer = null;
+var applyingRemoteUpdate = false;
+
+function loadLocalFallback() {
+  try { var r = localStorage.getItem('estudio-v1'); if (r) S = JSON.parse(r); } catch(e) { S = {}; }
+}
+
+function ensureDefaults() {
+  if (!S.cartera) S.cartera = JSON.parse(JSON.stringify(BASE_CLIENTS[1].carteraDefault));
+  if (!S.historial) S.historial = [];
+  if (!S.allClients) {
+    S.allClients = JSON.parse(JSON.stringify(BASE_CLIENTS));
+    S.allClients.forEach(function(c){ c.builtin = false; });
+  }
+  if (!S.allHonorarios) {
+    S.allHonorarios = JSON.parse(JSON.stringify(HONORARIOS_BASE));
+  }
+  if (S.customClients && S.customClients.length) {
+    S.allClients = S.allClients.concat(S.customClients);
+    delete S.customClients;
+  }
+  if (S.customHonorarios && S.customHonorarios.length) {
+    S.allHonorarios = S.allHonorarios.concat(S.customHonorarios);
+    delete S.customHonorarios;
+  }
+}
+
+function loadState(cb) {
+  // 1. Load local copy immediately so the UI has something to show right away
+  loadLocalFallback();
+  ensureDefaults();
+
+  // 2. If Firebase script hasn't loaded (e.g. no internet), stay on local data
+  if (!window.__fb) {
+    fbSyncStatus = 'offline';
+    if (cb) cb();
+    return;
+  }
+
+  var fb = window.__fb;
+
+  // 3. Try to fetch the cloud copy once, then subscribe to live updates
+  fb.getDoc(fb.docRef).then(function(snap) {
+    if (snap.exists()) {
+      var remote = snap.data();
+      if (remote && remote.payload) {
+        try {
+          S = JSON.parse(remote.payload);
+          ensureDefaults();
+        } catch(e) { /* keep local S if remote payload is corrupt */ }
+      }
+    } else {
+      // No cloud doc yet -> push our local/default data as the first version
+      pushToCloud();
+    }
+    fbSyncStatus = 'synced';
+    if (cb) cb();
+    subscribeToCloud();
+  }).catch(function(err) {
+    console.log('Firebase read error, using local data', err);
+    fbSyncStatus = 'error';
+    if (cb) cb();
+  });
+}
+
+function subscribeToCloud() {
+  if (!window.__fb || fbUnsubscribe) return;
+  var fb = window.__fb;
+  fbUnsubscribe = fb.onSnapshot(fb.docRef, function(snap) {
+    if (!snap.exists()) return;
+    var remote = snap.data();
+    if (!remote || !remote.payload) return;
+    // avoid reacting to our own write echo right after we just saved
+    if (remote.updatedBy === getDeviceId() && Date.now() - (remote.updatedAt||0) < 4000) return;
+    try {
+      applyingRemoteUpdate = true;
+      S = JSON.parse(remote.payload);
+      ensureDefaults();
+      try { localStorage.setItem('estudio-v1', JSON.stringify(S)); } catch(e){}
+      render();
+    } catch(e) { /* ignore corrupt remote payload */ }
+    finally { applyingRemoteUpdate = false; }
+  }, function(err) {
+    console.log('Firebase subscribe error', err);
+    fbSyncStatus = 'error';
+  });
+}
+
+function getDeviceId() {
+  var id = localStorage.getItem('estudio-device-id');
+  if (!id) { id = 'dev_' + Math.random().toString(36).slice(2) + Date.now(); localStorage.setItem('estudio-device-id', id); }
+  return id;
+}
+
+function pushToCloud() {
+  if (!window.__fb) return;
+  var fb = window.__fb;
+  fb.setDoc(fb.docRef, {
+    payload: JSON.stringify(S),
+    updatedAt: Date.now(),
+    updatedBy: getDeviceId()
+  }).then(function() {
+    fbSyncStatus = 'synced';
+  }).catch(function(err) {
+    console.log('Firebase write error', err);
+    fbSyncStatus = 'error';
+  });
+}
+
+function save() {
+  // always keep a local copy as a safety net
+  try { localStorage.setItem('estudio-v1', JSON.stringify(S)); } catch(e) { alert('Error al guardar datos localmente.'); }
+  if (applyingRemoteUpdate) return; // don't bounce remote-triggered renders back to the cloud
+  // debounce cloud writes slightly so rapid clicks don't spam Firestore
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(pushToCloud, 300);
+}
+
+function vk(cid,m,y,id) { return cid+'|v|'+y+'-'+m+'|'+id; }
+function pk(cid,id) { return cid+'|p|'+id; }
+function ck(cid,m,y,id,f) { return cid+'|c|'+y+'-'+m+'|'+id+'|'+f; }
+function isClosed(m,y) { return !!(S.historial||[]).find(function(h){return h.month===m&&h.year===y;}); }
+
+function fmt(n) { return '$'+Math.round(n).toLocaleString('es-AR'); }
+function dayTag(dia) {
+  if (currentMonth !== today.getMonth() || currentYear !== today.getFullYear()) return '';
+  var d = today.getDate();
+  if (dia === d) return 'hoy';
+  if (dia > d && dia - d <= 5) return 'pronto';
+  return '';
+}
+function monthsFrom(ua) {
+  var p = ua.split('-'); var fy = parseInt(p[0]); var fm = parseInt(p[1]);
+  return (currentYear - fy) * 12 + (currentMonth + 1 - fm);
+}
+function needsIPC(c) { return monthsFrom(c.ua) >= 3; }
+
+function tv(cid,id) { if(isClosed(currentMonth,currentYear))return; var k=vk(cid,currentMonth,currentYear,id); S[k]=!S[k]; save(); render(); }
+function tp(cid,id) { var k=pk(cid,id); S[k]=!S[k]; save(); render(); }
+function tc(cid,id,f) { if(isClosed(currentMonth,currentYear))return; var k=ck(cid,currentMonth,currentYear,id,f); S[k]=!S[k]; save(); render(); }
+
+/* ============== CERRAR MES ============== */
+function cerrarMes() {
+  if (isClosed(currentMonth,currentYear)) return;
+  if (!confirm('Cerrar ' + MONTHS[currentMonth] + ' ' + currentYear + '?\nEl mes quedara bloqueado y se guardara en el historial.')) return;
+  var allClients = getAllClients();
+  var snapshot = allClients.map(function(cl) {
+    var totalV = cl.venc.length;
+    var doneV = cl.venc.filter(function(v){return !!S[vk(cl.id,currentMonth,currentYear,v.id)];}).length;
+    var r = {cid:cl.id,cname:cl.name,totalV:totalV,doneV:doneV};
+    if (cl.tipo === 'agencia' && cl.id === 'italica') {
+      var car = S.cartera||[];
+      var cobrado=0,facturas=0,cnt10=0,cnt15=0,cntSin=0;
+      var det = car.map(function(c) {
+        var p10=!!S[ck(cl.id,currentMonth,currentYear,c.id,'d10')];
+        var p15=!!S[ck(cl.id,currentMonth,currentYear,c.id,'d15')];
+        var fc=!!S[ck(cl.id,currentMonth,currentYear,c.id,'fact')];
+        if(fc)facturas++;
+        var m=p15&&!p10?Math.round(c.monto*1.05):c.monto;
+        if(p10){cobrado+=c.monto;cnt10++;}else if(p15){cobrado+=m;cnt15++;}else cntSin++;
+        return {nombre:c.nombre,monto:c.monto,fc:fc,p10:p10,p15:p15,estado:p10?'Al dia':p15?'+5%':'Pendiente'};
+      });
+      r.cartera={cobrado:cobrado,facturas:facturas,cnt10:cnt10,cnt15:cnt15,cntSin:cntSin,total:car.length,det:det};
+    }
+    return r;
+  });
+  S.historial.unshift({month:currentMonth,year:currentYear,fecha:new Date().toLocaleDateString('es-AR'),snapshot:snapshot});
+  save(); render();
+}
+
+/* ============== CARTERA (Italica) CRUD ============== */
+function openAdd() {
+  document.getElementById('mc-title').textContent='Agregar cliente';
+  document.getElementById('mc-nombre').value='';
+  document.getElementById('mc-monto').value='';
+  document.getElementById('mc-fecha').value='';
+  document.getElementById('mc-id').value='';
+  document.getElementById('modal-cli').classList.remove('hidden');
+}
+function openEdit(id) {
+  var c = (S.cartera||[]).find(function(x){return x.id===id;});
+  if(!c)return;
+  document.getElementById('mc-title').textContent='Editar cliente';
+  document.getElementById('mc-nombre').value=c.nombre;
+  document.getElementById('mc-monto').value=c.monto;
+  document.getElementById('mc-fecha').value=c.ua;
+  document.getElementById('mc-id').value=id;
+  document.getElementById('modal-cli').classList.remove('hidden');
+}
+function saveCartera() {
+  var nombre=document.getElementById('mc-nombre').value.trim();
+  var monto=parseInt(document.getElementById('mc-monto').value)||0;
+  var ua=document.getElementById('mc-fecha').value.trim();
+  var eid=document.getElementById('mc-id').value;
+  if(!nombre||!monto||!ua){alert('Completa todos los campos.');return;}
+  if(eid){var i=(S.cartera||[]).findIndex(function(x){return x.id===eid;});if(i>-1)S.cartera[i]=Object.assign(S.cartera[i],{nombre:nombre,monto:monto,ua:ua});}
+  else S.cartera.push({id:'c'+Date.now(),nombre:nombre,monto:monto,ua:ua});
+  save(); closeModal('modal-cli'); render();
+}
+function delCartera(id) {
+  if(!confirm('Eliminar este cliente?'))return;
+  S.cartera=S.cartera.filter(function(x){return x.id!==id;});
+  save(); render();
+}
+function markIPC(id) {
+  var c=(S.cartera||[]).find(function(x){return x.id===id;});
+  if(!c)return;
+  c.ua=currentYear+'-'+(currentMonth+1<10?'0':'')+(currentMonth+1);
+  save(); render();
+}
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+/* ============== CLIENT WIZARD (nuevo / editar cliente completo) ============== */
+function openClientWizard(editId) {
+  wizStep = 1;
+  wizVencCounter = 0;
+  document.getElementById('wz-edit-id').value = editId || '';
+  document.getElementById('wz-venc-list').innerHTML = '';
+  document.getElementById('wz-hon-ipc-wrap').style.display = 'none';
+  document.getElementById('wz-hon-semestral').checked = false;
+
+  if (editId) {
+    var c = (S.allClients||[]).find(function(x){return x.id===editId;});
+    if (!c) return;
+    document.getElementById('wiz-title').textContent = 'Editar cliente';
+    document.getElementById('wz-nombre').value = c.name;
+    document.getElementById('wz-cuit').value = c.cuit;
+    document.getElementById('wz-tipo').value = c.tipo;
+    document.getElementById('wz-impuestos').value = (c.impuestos||(c.badges||[]).map(function(b){return b.l;})).join(', ');
+    document.getElementById('wz-notas').value = c.notas||'';
+    (c.venc||[]).forEach(function(v) { wizAddVenc(v); });
+    var hon = getAllHonorarios().find(function(h){return h.clientId===editId;});
+    if (hon) {
+      document.getElementById('wz-hon-monto').value = hon.monto;
+      document.getElementById('wz-hon-dia').value = hon.vence;
+      document.getElementById('wz-hon-semestral').checked = !!hon.semestral;
+      document.getElementById('wz-hon-ipc-wrap').style.display = hon.semestral ? 'block':'none';
+      document.getElementById('wz-hon-ipc-mes').value = hon.ipcMes||'';
+    } else {
+      document.getElementById('wz-hon-monto').value='';
+      document.getElementById('wz-hon-dia').value='';
+    }
+    document.getElementById('wz-delete-btn').classList.remove('hidden');
+  } else {
+    document.getElementById('wiz-title').textContent = 'Nuevo cliente';
+    document.getElementById('wz-nombre').value = '';
+    document.getElementById('wz-cuit').value = '';
+    document.getElementById('wz-tipo').value = 'ri';
+    document.getElementById('wz-impuestos').value = '';
+    document.getElementById('wz-notas').value = '';
+    document.getElementById('wz-hon-monto').value = '';
+    document.getElementById('wz-hon-dia').value = '';
+    wizAddVenc();
+    document.getElementById('wz-delete-btn').classList.add('hidden');
+  }
+
+  document.getElementById('wz-hon-semestral').onchange = function() {
+    document.getElementById('wz-hon-ipc-wrap').style.display = this.checked ? 'block':'none';
+  };
+
+  wizGoStep(1);
+  document.getElementById('modal-wizard').classList.remove('hidden');
+}
+
+function wizGoStep(n) {
+  wizStep = n;
+  document.querySelectorAll('.step-tab').forEach(function(t) {
+    t.className = 'step-tab' + (parseInt(t.getAttribute('data-step'))===n ? ' active':'');
+  });
+  document.querySelectorAll('.step-panel').forEach(function(p,idx) {
+    p.className = 'step-panel' + ((idx+1)===n ? ' active':'');
+  });
+}
+
+function wizAddVenc(existing) {
+  wizVencCounter++;
+  var uid = 'wzv'+wizVencCounter;
+  var div = document.createElement('div');
+  div.className = 'repeat-block';
+  div.setAttribute('data-uid', uid);
+  div.innerHTML =
+    '<button class="btn-danger" onclick="this.parentElement.remove()">X</button>'+
+    '<div class="fg"><label>Nombre del vencimiento</label><input class="wzv-name" placeholder="Ej: DDJJ IVA mensual" value="'+(existing?escapeHtml(existing.name):'')+'"></div>'+
+    '<div class="fg-row">'+
+      '<div class="fg"><label>Dia del mes</label><input class="wzv-dia" type="number" min="1" max="31" placeholder="20" value="'+(existing?existing.dia:'')+'"></div>'+
+      '<div class="fg"><label>Descripcion breve</label><input class="wzv-desc" placeholder="Detalle opcional" value="'+(existing?escapeHtml(existing.desc||''):'')+'"></div>'+
+    '</div>';
+  document.getElementById('wz-venc-list').appendChild(div);
+}
+
+function escapeHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function wizSaveClient() {
+  var nombre = document.getElementById('wz-nombre').value.trim();
+  var cuit = document.getElementById('wz-cuit').value.trim();
+  var tipo = document.getElementById('wz-tipo').value;
+  var impuestosRaw = document.getElementById('wz-impuestos').value.trim();
+  var notas = document.getElementById('wz-notas').value.trim();
+  var editId = document.getElementById('wz-edit-id').value;
+
+  if (!nombre) { alert('El nombre del cliente es obligatorio.'); wizGoStep(1); return; }
+
+  var impuestos = impuestosRaw ? impuestosRaw.split(',').map(function(s){return s.trim();}).filter(Boolean) : [];
+  var badges = impuestos.map(function(imp) { return {l:imp, c:'b-blue'}; });
+
+  var vencBlocks = document.querySelectorAll('#wz-venc-list .repeat-block');
+  var venc = [];
+  vencBlocks.forEach(function(block, idx) {
+    var name = block.querySelector('.wzv-name').value.trim();
+    var dia = parseInt(block.querySelector('.wzv-dia').value) || 1;
+    var desc = block.querySelector('.wzv-desc').value.trim();
+    if (name) venc.push({id:'v'+idx+'_'+Date.now(), name:name, desc:desc, dia:dia});
+  });
+
+  var id = editId || ('cli_' + Date.now());
+  var typeLabel = tipo==='ri'?'Responsable Inscripto':tipo==='mono'?'Monotributista':tipo==='agencia'?'Agencia':'Otro';
+
+  // Preserve fields not managed by the simple wizard (pendientes, planes, cartera-specific tipo) if editing
+  var existing = editId ? (S.allClients||[]).find(function(x){return x.id===editId;}) : null;
+
+  var clientObj = {
+    id:id, name:nombre, type:typeLabel, cuit:cuit||'-', builtin:false,
+    badges:badges, venc:venc,
+    pend: existing ? (existing.pend||[]) : [],
+    planes: existing ? (existing.planes||[]) : [],
+    tipo:tipo,
+    impuestos:impuestos, notas:notas
+  };
+  // keep cartera-default link if this is the Italica-type client being edited
+  if (existing && existing.carteraDefault) clientObj.carteraDefault = existing.carteraDefault;
+
+  if (editId) {
+    var i = S.allClients.findIndex(function(x){return x.id===editId;});
+    if (i>-1) S.allClients[i] = clientObj;
+  } else {
+    S.allClients.push(clientObj);
+  }
+
+  // Honorarios
+  var honMonto = parseInt(document.getElementById('wz-hon-monto').value) || 0;
+  var honDia = parseInt(document.getElementById('wz-hon-dia').value) || 10;
+  var honSemestral = document.getElementById('wz-hon-semestral').checked;
+  var honIpcMes = document.getElementById('wz-hon-ipc-mes').value.trim();
+
+  S.allHonorarios = (S.allHonorarios||[]).filter(function(h){return h.clientId!==id;});
+  if (honMonto > 0) {
+    S.allHonorarios.push({
+      id:'hon_'+id, cliente:nombre, clientId:id, monto:honMonto, vence:honDia,
+      ipcMes: honSemestral ? (honIpcMes||null) : null, semestral: honSemestral
+    });
+  }
+
+  save();
+  closeModal('modal-wizard');
+  // select the new/edited client
+  var allClients = getAllClients();
+  var idx = allClients.findIndex(function(c){return c.id===id;});
+  if (idx > -1) { activeClient = idx; activeView = 'client'; }
+  render();
+}
+
+function wizDeleteClient() {
+  var editId = document.getElementById('wz-edit-id').value;
+  if (!editId) return;
+  var warnExtra = (editId === 'italica') ? ' Esto tambien eliminara la cartera de clientes y los cobros registrados de Italica.' : '';
+  if (!confirm('Eliminar este cliente y todos sus datos asociados?' + warnExtra + ' Esta accion no se puede deshacer.')) return;
+  S.allClients = (S.allClients||[]).filter(function(x){return x.id!==editId;});
+  S.allHonorarios = (S.allHonorarios||[]).filter(function(h){return h.clientId!==editId;});
+  if (editId === 'italica') { S.cartera = []; }
+  save();
+  closeModal('modal-wizard');
+  activeClient = 0; activeView = 'client';
+  render();
+}
+
+/* ============== BACKUP ============== */
+function exportBackup() {
+  var data = JSON.stringify(S,null,2);
+  var blob = new Blob([data],{type:'application/json'});
+  var a = document.createElement('a');
+  var d = new Date().toISOString().slice(0,10);
+  a.href = URL.createObjectURL(blob);
+  a.download = 'EstudioContable_backup_'+d+'.json';
+  a.click();
+}
+function openImport() {
+  document.getElementById('backup-txt').value='';
+  document.getElementById('modal-backup').classList.remove('hidden');
+}
+function importBackup() {
+  var txt = document.getElementById('backup-txt').value.trim();
+  try {
+    var data = JSON.parse(txt);
+    if(!data||typeof data!=='object')throw new Error();
+    if(!confirm('Restaurar el backup? Se reemplazaran todos los datos actuales en este dispositivo y en la nube.'))return;
+    S = data;
+    ensureDefaults();
+    save();
+    closeModal('modal-backup'); render();
+    alert('Backup restaurado correctamente.');
+  } catch(e) { alert('Archivo no valido. Asegurate de pegar el contenido completo del .json.'); }
+}
+
+/* ============== EXPORT ============== */
+function exportPDF(idx) {
+  var entry = S.historial[idx];
+  var mes = MONTHS[entry.month]+' '+entry.year;
+  var w = window.open('','_blank');
+  var h = '<html><head><meta charset="UTF-8"><title>Cierre '+mes+'</title>';
+  h += '<style>body{font-family:Arial,sans-serif;font-size:12px;padding:30px;max-width:900px;margin:0 auto;}';
+  h += 'h1{font-size:20px;margin-bottom:4px;}h2{font-size:14px;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:5px;}';
+  h += 'table{width:100%;border-collapse:collapse;margin:10px 0;}th{background:#f5f5f5;padding:7px 10px;text-align:left;font-size:11px;border-bottom:2px solid #ddd;}';
+  h += 'td{padding:7px 10px;border-bottom:1px solid #eee;font-size:12px;}.ok{color:#2d7a2d;font-weight:600;}.warn{color:#8a5a00;font-weight:600;}.bad{color:#9a2020;font-weight:600;}';
+  h += '.meta{color:#666;font-size:12px;margin-bottom:20px;}</style></head><body>';
+  h += '<h1>Cierre de mes - '+mes+'</h1><div class="meta">Cerrado el '+entry.fecha+'</div>';
+  entry.snapshot.forEach(function(s) {
+    h += '<h2>'+s.cname+'</h2>';
+    h += '<p>Vencimientos cumplidos: <strong>'+s.doneV+' / '+s.totalV+'</strong></p>';
+    if(s.cartera) {
+      var c=s.cartera;
+      h += '<p style="margin:8px 0">Facturas emitidas: <strong>'+c.facturas+'/'+c.total+'</strong> | ';
+      h += 'Total cobrado: <strong>$'+Math.round(c.cobrado).toLocaleString('es-AR')+'</strong> | ';
+      h += 'Al dia: <strong>'+c.cnt10+'</strong> | Con recargo: <strong>'+c.cnt15+'</strong> | Sin cobrar: <strong>'+c.cntSin+'</strong></p>';
+      h += '<table><thead><tr><th>Cliente</th><th>Monto base</th><th>Factura</th><th>Estado cobro</th></tr></thead><tbody>';
+      c.det.forEach(function(d) {
+        var cls=d.estado==='Al dia'?'ok':d.estado==='+5%'?'warn':'bad';
+        h += '<tr><td>'+d.nombre+'</td><td>$'+d.monto.toLocaleString('es-AR')+'</td>';
+        h += '<td>'+(d.fc?'Si emitida':'Pendiente')+'</td>';
+        h += '<td class="'+cls+'">'+d.estado+'</td></tr>';
+      });
+      h += '</tbody></table>';
+    }
+  });
+  h += '<p style="margin-top:30px;color:#999;font-size:11px;">Generado: '+new Date().toLocaleDateString('es-AR')+'</p>';
+  h += '</body></html>';
+  w.document.write(h); w.document.close();
+  setTimeout(function(){w.print();},600);
+}
+
+function exportCSV(idx) {
+  var entry = S.historial[idx];
+  var mes = MONTHS[entry.month]+' '+entry.year;
+  var csv = '\uFEFF';
+  csv += 'Cierre de mes,'+mes+'\n';
+  csv += 'Cerrado el,'+entry.fecha+'\n\n';
+  entry.snapshot.forEach(function(s) {
+    csv += s.cname+'\n';
+    csv += 'Vencimientos cumplidos,'+s.doneV+'/'+s.totalV+'\n';
+    if(s.cartera) {
+      var c=s.cartera;
+      csv += 'Facturas emitidas,'+c.facturas+'/'+c.total+'\n';
+      csv += 'Total cobrado,$'+Math.round(c.cobrado).toLocaleString('es-AR')+'\n';
+      csv += 'Al dia,'+c.cnt10+'\nCon recargo,'+c.cnt15+'\nSin cobrar,'+c.cntSin+'\n';
+      csv += '\nCliente,Monto base,Factura emitida,Estado cobro\n';
+      c.det.forEach(function(d){csv+=d.nombre+',$'+d.monto+','+(d.fc?'Si':'No')+','+d.estado+'\n';});
+    }
+    csv += '\n';
+  });
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Cierre_'+mes.replace(' ','_')+'.csv';
+  a.click();
+}
+
+function backupBar() {
+  var size = 0;
+  try { var r=localStorage.getItem('estudio-v1'); size=r?(r.length/1024).toFixed(1):0; } catch(e){}
+  var statusLabel = fbSyncStatus==='synced' ? 'Sincronizado en la nube' :
+                     fbSyncStatus==='connecting' ? 'Conectando...' :
+                     fbSyncStatus==='offline' ? 'Sin conexion - solo local' : 'Error de sincronizacion';
+  var statusColor = fbSyncStatus==='synced' ? 'var(--green)' :
+                     fbSyncStatus==='connecting' ? 'var(--tx2)' : 'var(--amber)';
+  return '<div class="backup-bar">'+
+    '<span class="backup-title" style="color:'+statusColor+'">&#9679; '+statusLabel+'</span>'+
+    '<button class="btn-sm" onclick="exportBackup()">Exportar backup</button>'+
+    '<button class="btn-sm" onclick="openImport()">Importar backup</button>'+
+    '<span class="backup-info">'+size+' KB local</span>'+
+  '</div>';
+}
+
+/* ============== CALENDARIO ============== */
+function getCalEvents(month, year) {
+  var events = [];
+  var allClients = getAllClients();
+  allClients.forEach(function(cl) {
+    (cl.venc||[]).forEach(function(v) {
+      var cls = cl.id==='alfonzo'?'ce-blue':cl.id==='italica'?'ce-teal':cl.id==='nacho'?'ce-purple':'ce-gray';
+      events.push({dia:v.dia, label:v.name, cls:cls});
+    });
+  });
+  var hons = getAllHonorarios();
+  hons.forEach(function(h) {
+    events.push({dia:h.vence, label:'Hon. '+h.cliente+' '+fmt(h.monto), cls:'ce-green'});
+    if(h.semestral && h.ipcMes) {
+      var p=h.ipcMes.split('-'); var im=parseInt(p[1])-1; var iy=parseInt(p[0]);
+      if(im===month && iy===year) {
+        events.push({dia:1, label:'Actualizar hon. '+h.cliente+' (IPC)', cls:'ce-amber'});
+      }
+    }
+  });
+  // Conducta fiscal Nacho - bimestral, proxima julio 2026
+  var nextCond = new Date(2026,6,1);
+  var cur = new Date(year,month,1);
+  var diffM = (cur.getFullYear()-nextCond.getFullYear())*12+(cur.getMonth()-nextCond.getMonth());
+  if(diffM >= 0 && diffM % 2 === 0) {
+    events.push({dia:15, label:'Conducta fiscal Nacho', cls:'ce-amber'});
+  }
+  return events;
+}
+
+function renderCalendar() {
+  var events = getCalEvents(currentMonth, currentYear);
+  var byDay = {};
+  events.forEach(function(e) {
+    if(!byDay[e.dia]) byDay[e.dia] = [];
+    byDay[e.dia].push(e);
+  });
+
+  var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  var daysInMonth = new Date(currentYear, currentMonth+1, 0).getDate();
+  var todayD = (currentMonth===today.getMonth()&&currentYear===today.getFullYear())?today.getDate():0;
+
+  var h = '<div class="section"><div class="sec-title">Calendario - '+MONTHS[currentMonth]+' '+currentYear+'</div>';
+  h += '<div class="cal-header">';
+  ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'].forEach(function(d){h+='<div class="cal-day-name">'+d+'</div>';});
+  h += '</div><div class="cal-grid">';
+
+  for(var i=0;i<firstDay;i++) h += '<div class="cal-day empty"></div>';
+
+  for(var d=1;d<=daysInMonth;d++) {
+    var isToday = d===todayD;
+    var devs = byDay[d]||[];
+    h += '<div class="cal-day'+(isToday?' today':'')+(devs.length?' has-events':'')+'">';
+    h += '<div class="cal-day-num">'+d+'</div>';
+    var shown = devs.slice(0,3);
+    shown.forEach(function(e){h+='<div class="cal-event '+e.cls+'" title="'+e.label+'">'+e.label+'</div>';});
+    if(devs.length>3) h += '<div class="cal-event ce-blue">+' +(devs.length-3)+' mas</div>';
+    h += '</div>';
+  }
+  h += '</div></div>';
+
+  // Honorarios section
+  h += '<div class="section"><div class="sec-title">Honorarios del mes</div>';
+  var hons = getAllHonorarios();
+  var totalHon = 0;
+  var totalCob = 0;
+  hons.forEach(function(hon) {
+    totalHon += hon.monto;
+    var kc = 'hon|cobrado|'+currentYear+'-'+currentMonth+'|'+hon.id;
+    var cobrado = !!S[kc];
+    if(cobrado) totalCob += hon.monto;
+    var ipcDue = false;
+    if(hon.semestral && hon.ipcMes) {
+      var p=hon.ipcMes.split('-'); var im=parseInt(p[1])-1; var iy=parseInt(p[0]);
+      ipcDue = (im===currentMonth && iy===currentYear);
+    }
+    h += '<div class="hon-card">';
+    h += '<div class="hon-info"><div class="hon-name">'+hon.cliente+'</div>';
+    h += '<div class="hon-detail">Vence dia '+hon.vence+' de cada mes';
+    if(hon.semestral) h += ' - Actualizacion semestral por IPC';
+    h += '</div></div>';
+    h += '<div class="hon-right">';
+    if(ipcDue) h += '<span class="hon-badge">Actualizar IPC este mes</span>';
+    if(cobrado) h += '<span class="hon-cobrado">Cobrado</span>';
+    h += '<div class="hon-monto">'+fmt(hon.monto)+'</div>';
+    h += '<input type="checkbox"'+(cobrado?' checked':'')+' onchange="toggleHon(\''+hon.id+'\')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);" title="Marcar como cobrado">';
+    h += '</div></div>';
+  });
+  if (!hons.length) {
+    h += '<div style="color:var(--tx2);font-size:13px;padding:10px 0;">Todavia no hay honorarios configurados. Agregalos al crear o editar un cliente.</div>';
+  } else {
+    h += '<div class="hon-total"><div class="hon-total-label">Total honorarios del mes</div>';
+    h += '<div><span style="font-size:12px;color:var(--tx2);margin-right:12px;">Cobrado: '+fmt(totalCob)+' de '+fmt(totalHon)+'</span>';
+    h += '<span class="hon-total-val">'+fmt(totalHon)+'</span></div></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function toggleHon(id) {
+  var k = 'hon|cobrado|'+currentYear+'-'+currentMonth+'|'+id;
+  S[k] = !S[k];
+  save(); render();
+}
+
+function renderCalendario() {
+  var h = backupBar();
+  h += '<div class="pg-title">Calendario - '+MONTHS[currentMonth]+' '+currentYear+'</div>';
+  h += '<div class="pg-meta" style="margin-bottom:20px;">Todos los vencimientos y honorarios del mes</div>';
+  h += renderCalendar();
+  document.getElementById('main').innerHTML = h;
+}
+
+/* ============== HISTORIAL ============== */
+function renderHistorial() {
+  var hist = S.historial||[];
+  var h = backupBar();
+  h += '<div class="pg-title">Historial de meses cerrados</div>';
+  h += '<div class="pg-meta" style="margin-bottom:20px;">Consulta y exporta cualquier mes cerrado</div>';
+  if(!hist.length) {
+    h += '<div class="hist-empty">Todavia no hay meses cerrados.<br>Cuando cierres un mes aparecera aqui.</div>';
+  } else {
+    hist.forEach(function(entry,i) {
+      var mes=MONTHS[entry.month]+' '+entry.year;
+      var totalV=entry.snapshot.reduce(function(s,x){return s+x.totalV;},0);
+      var doneV=entry.snapshot.reduce(function(s,x){return s+x.doneV;},0);
+      var ag=entry.snapshot.find(function(x){return x.cid==='italica';});
+      var cobrado=ag&&ag.cartera?ag.cartera.cobrado:0;
+      var facturas=ag&&ag.cartera?ag.cartera.facturas:0;
+      var totalCli=ag&&ag.cartera?ag.cartera.total:0;
+      var sinCobrar=ag&&ag.cartera?ag.cartera.cntSin:0;
+      h += '<div class="hist-card">';
+      h += '<div class="hist-hdr"><div class="hist-month">'+mes+'</div><div class="hist-meta">Cerrado el '+entry.fecha+'</div></div>';
+      h += '<div class="hist-metrics">';
+      h += '<div class="hmet"><div class="hmet-val">'+doneV+'/'+totalV+'</div><div class="hmet-label">Vencimientos</div></div>';
+      if(ag){
+        h += '<div class="hmet"><div class="hmet-val" style="color:var(--green)">'+facturas+'/'+totalCli+'</div><div class="hmet-label">Facturas Italica</div></div>';
+        h += '<div class="hmet"><div class="hmet-val" style="color:var(--green)">'+fmt(cobrado)+'</div><div class="hmet-label">Cobrado</div></div>';
+        h += '<div class="hmet"><div class="hmet-val" style="color:'+(sinCobrar>0?'var(--amber)':'var(--green)')+'">'+sinCobrar+'</div><div class="hmet-label">Sin cobrar</div></div>';
+      }
+      h += '</div>';
+      h += '<div class="hist-actions">';
+      h += '<button class="btn-sm" onclick="exportPDF('+i+')">Exportar PDF</button>';
+      h += '<button class="btn-sm" onclick="exportCSV('+i+')">Exportar Excel</button>';
+      h += '</div></div>';
+    });
+  }
+  document.getElementById('main').innerHTML = h;
+}
+
+/* ============== RENDER CLIENTE ============== */
+function renderClient() {
+  var allClients = getAllClients();
+  var cl = allClients[activeClient];
+  if (!cl) { activeClient = 0; cl = allClients[0]; }
+  var closed = isClosed(currentMonth,currentYear);
+  var cid = cl.id;
+  var totalV = cl.venc.length;
+  var doneV = cl.venc.filter(function(v){return !!S[vk(cid,currentMonth,currentYear,v.id)];}).length;
+  var totalP = (cl.pend||[]).filter(function(p){return !S[pk(cid,p.id)];}).length;
+
+  var h = backupBar();
+  if(closed) h += '<div class="closed-banner">Este mes esta cerrado. Puedes consultarlo pero no modificarlo.</div>';
+
+  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+  h += '<div><div class="pg-title">'+cl.name+'</div>';
+  h += '<div class="pg-meta">'+cl.cuit+' - '+cl.type+'</div></div>';
+  h += '<button class="btn-sm" onclick="openClientWizard(\''+cl.id+'\')">Editar cliente</button>';
+  h += '</div>';
+
+  h += '<div class="badges">'+cl.badges.map(function(b){return '<span class="badge '+b.c+'">'+b.l+'</span>';}).join('')+'</div>';
+
+  if (cl.notas) {
+    h += '<div class="ipc-alert" style="background:var(--bg2);border-left-color:var(--tx3);color:var(--tx2);"><span>'+cl.notas+'</span></div>';
+  }
+
+  h += '<div class="metrics">';
+  h += '<div class="metric"><div class="metric-label">Vencimientos</div><div class="metric-val">'+totalV+'</div></div>';
+  h += '<div class="metric"><div class="metric-label">Cumplidos</div><div class="metric-val green">'+doneV+'</div></div>';
+  h += '<div class="metric"><div class="metric-label">Pendientes</div><div class="metric-val amber">'+(totalV-doneV)+'</div></div>';
+  h += '<div class="metric"><div class="metric-label">Tareas abiertas</div><div class="metric-val red">'+totalP+'</div></div>';
+  h += '</div>';
+
+  if (totalV === 0) {
+    h += '<div class="empty-state"><div class="empty-state-title">Sin vencimientos configurados</div><div class="empty-state-desc">Edita este cliente para agregar sus vencimientos mensuales.</div></div>';
+  } else {
+    h += '<div class="section"><div class="sec-title">Vencimientos del mes</div>';
+    h += cl.venc.map(function(v) {
+      var done = !!S[vk(cid,currentMonth,currentYear,v.id)];
+      var dt = dayTag(v.dia);
+      var click = closed ? '' : ' onclick="tv(\''+cid+'\',\''+v.id+'\')"';
+      return '<div class="item'+(done?' done':'')+(closed?' locked':'')+'"'+click+'>'+
+        '<div class="chk"><span class="chk-i">&#10003;</span></div>'+
+        '<div class="item-info"><div class="item-name">'+v.name+'</div><div class="item-desc">'+(v.desc||'')+'</div></div>'+
+        '<div class="item-tag'+(dt?' '+dt:'')+'">Dia '+v.dia+(dt==='hoy'?' - hoy':dt==='pronto'?' - pronto':'')+'</div>'+
+      '</div>';
+    }).join('');
+    h += '</div>';
+  }
+
+  if(cl.tipo === 'agencia' && cl.id === 'italica') {
+    var car = S.cartera||[];
+    var alertas = car.filter(function(c){return needsIPC(c);});
+    if(alertas.length && !closed) {
+      h += '<div class="section"><div class="sec-title">Actualizaciones IPC pendientes</div>';
+      alertas.forEach(function(c) {
+        var m = monthsFrom(c.ua);
+        h += '<div class="ipc-alert"><span><strong>'+c.nombre+'</strong> - '+m+' mes'+(m!==1?'es':'')+' desde ultima actualizacion ('+c.ua+')</span><button class="btn-sm" onclick="markIPC(\''+c.id+'\')">Marcar actualizado</button></div>';
+      });
+      h += '</div>';
+    }
+    var cf=car.filter(function(c){return !!S[ck(cid,currentMonth,currentYear,c.id,'fact')];}).length;
+    var cc=car.filter(function(c){return !!S[ck(cid,currentMonth,currentYear,c.id,'d10')]||!!S[ck(cid,currentMonth,currentYear,c.id,'d15')];}).length;
+    var totalCob=0;
+    car.forEach(function(c){
+      var p10=!!S[ck(cid,currentMonth,currentYear,c.id,'d10')];
+      var p15=!!S[ck(cid,currentMonth,currentYear,c.id,'d15')];
+      if(p10)totalCob+=c.monto;else if(p15)totalCob+=Math.round(c.monto*1.05);
+    });
+    h += '<div class="resumen-bar">';
+    h += '<div class="rcard"><div class="rval">'+car.length+'</div><div class="rlabel">Clientes</div></div>';
+    h += '<div class="rcard"><div class="rval green">'+cf+'</div><div class="rlabel">Facturas emitidas</div></div>';
+    h += '<div class="rcard"><div class="rval green">'+cc+'</div><div class="rlabel">Cobraron</div></div>';
+    h += '<div class="rcard"><div class="rval amber">'+(car.length-cc)+'</div><div class="rlabel">Sin cobrar</div></div>';
+    h += '</div>';
+    h += '<div class="section"><div class="sec-title">Cartera - '+MONTHS[currentMonth]+' '+currentYear+(closed?' (cerrado)':'')+'<span>'+(closed?'':'<button class="btn-sm" onclick="openAdd()">+ Agregar</button>')+'</span></div>';
+    h += '<table class="ctable"><thead><tr><th>Cliente</th><th>Monto</th><th>Factura</th><th>Cobro al 10</th><th>Cobro al 15 (+5%)</th><th>Estado</th>'+(closed?'':'<th></th>')+'</tr></thead><tbody>';
+    var totalBase=0;
+    car.forEach(function(c) {
+      var fc=!!S[ck(cid,currentMonth,currentYear,c.id,'fact')];
+      var p10=!!S[ck(cid,currentMonth,currentYear,c.id,'d10')];
+      var p15=!!S[ck(cid,currentMonth,currentYear,c.id,'d15')];
+      totalBase += c.monto;
+      var mshow = p15&&!p10 ? fmt(Math.round(c.monto*1.05)) : fmt(c.monto);
+      var estado = p10 ? '<span class="ebadge b-green">Cobrado</span>' : p15 ? '<span class="ebadge b-amber">+5% recargo</span>' : '<span class="ebadge b-red">Pendiente</span>';
+      var dis = closed ? ' disabled' : '';
+      h += '<tr>'+
+        '<td><strong>'+c.nombre+'</strong></td>'+
+        '<td>'+mshow+'</td>'+
+        '<td class="cbwrap"><input type="checkbox"'+(fc?' checked':'')+dis+(!closed?' onchange="tc(\''+cid+'\',\''+c.id+'\',\'fact\')"':'')+'></td>'+
+        '<td class="cbwrap"><input type="checkbox"'+(p10?' checked':'')+(p15||closed?' disabled':'')+(!closed?' onchange="tc(\''+cid+'\',\''+c.id+'\',\'d10\')"':'')+'></td>'+
+        '<td class="cbwrap"><input type="checkbox"'+(p15?' checked':'')+(p10||closed?' disabled':'')+(!closed?' onchange="tc(\''+cid+'\',\''+c.id+'\',\'d15\')"':'')+'></td>'+
+        '<td>'+estado+'</td>'+
+        (!closed?'<td style="white-space:nowrap"><button class="btn-sm" onclick="openEdit(\''+c.id+'\')" style="margin-right:4px">Editar</button><button class="btn-danger" onclick="delCartera(\''+c.id+'\')">X</button></td>':'')+
+      '</tr>';
+    });
+    h += '<tr class="trow"><td>Total</td><td>'+fmt(totalBase)+'</td><td style="text-align:center;font-weight:400;font-size:11px">'+cf+'/'+car.length+'</td><td colspan="2" style="text-align:center;font-weight:400;font-size:11px">'+cc+' cobrados</td><td><strong>'+fmt(totalCob)+'</strong></td>'+(closed?'':'<td></td>')+'</tr>';
+    h += '</tbody></table></div>';
+  }
+
+  if(cl.pend && cl.pend.length) {
+    h += '<div class="section"><div class="sec-title">Tareas pendientes</div>';
+    ['urgente','importante','a evaluar'].forEach(function(nv) {
+      var items = cl.pend.filter(function(p){return p.lv===nv;});
+      if(!items.length) return;
+      h += '<div class="sub-label">'+nv+'</div>';
+      items.forEach(function(p) {
+        var done = !!S[pk(cid,p.id)];
+        h += '<div class="pitem'+(done?' done':'')+'" onclick="tp(\''+cid+'\',\''+p.id+'\')">' +
+          '<div class="pchk"><span class="chk-i">&#10003;</span></div>'+
+          '<div class="item-info"><div class="item-name">'+p.n+' <span class="badge '+p.c+'">'+p.lv+'</span></div><div class="item-desc">'+p.d+'</div></div>'+
+        '</div>';
+      });
+    });
+    h += '</div>';
+  }
+
+  if(cl.planes && cl.planes.length) {
+    h += '<div class="section"><div class="sec-title">Planes de pago</div>';
+    cl.planes.forEach(function(p) {
+      var pct = Math.round(p.p/p.t*100);
+      h += '<div class="plan-card">'+
+        '<div class="plan-hdr"><div class="plan-name">'+p.n+'</div><div class="plan-meta">Vence dia '+p.v+' - Ultima cuota: '+p.fin+'</div></div>'+
+        '<div class="pbar"><div class="pfill '+p.cl+'" style="width:'+pct+'%"></div></div>'+
+        '<div class="plan-ftr"><span><strong>'+p.p+'</strong> de '+p.t+' cuotas</span><span><strong>'+(p.t-p.p)+'</strong> restantes - '+pct+'%</span></div>'+
+      '</div>';
+    });
+    h += '</div>';
+  }
+
+  // honorario de este cliente si tiene
+  var hon = getAllHonorarios().find(function(x){return x.clientId===cid;});
+  if (hon) {
+    var kc = 'hon|cobrado|'+currentYear+'-'+currentMonth+'|'+hon.id;
+    var cobrado = !!S[kc];
+    h += '<div class="section"><div class="sec-title">Honorarios</div>';
+    h += '<div class="hon-card">';
+    h += '<div class="hon-info"><div class="hon-name">Honorario mensual</div>';
+    h += '<div class="hon-detail">Vence dia '+hon.vence+(hon.semestral?' - Actualizacion semestral por IPC':'')+'</div></div>';
+    h += '<div class="hon-right">';
+    if(cobrado) h += '<span class="hon-cobrado">Cobrado</span>';
+    h += '<div class="hon-monto">'+fmt(hon.monto)+'</div>';
+    h += '<input type="checkbox"'+(cobrado?' checked':'')+' onchange="toggleHon(\''+hon.id+'\')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);">';
+    h += '</div></div></div>';
+  }
+
+  document.getElementById('main').innerHTML = h;
+}
+
+/* ============== RENDER PRINCIPAL ============== */
+function render() {
+  var allClients = getAllClients();
+  document.getElementById('month-label').textContent = MONTHS[currentMonth].substring(0,3)+' '+currentYear;
+  document.getElementById('sb-sub').textContent = MONTHS[currentMonth]+' '+currentYear;
+  document.getElementById('client-list').innerHTML = allClients.map(function(c,i) {
+    var active = activeView==='client' && i===activeClient;
+    return '<button class="cb'+(active?' active':'')+'" onclick="selectClient('+i+')">' +
+      '<div class="cb-name">'+c.name+'</div><div class="cb-type">'+c.type+'</div>'+
+    '</button>';
+  }).join('');
+  document.getElementById('btn-hist').className = 'cb'+(activeView==='historial'?' active':'');
+  document.getElementById('btn-cal').className = 'cb'+(activeView==='calendario'?' active':'');
+  var closed = isClosed(currentMonth,currentYear);
+  var btn = document.getElementById('btn-cerrar');
+  btn.textContent = closed ? 'Mes cerrado' : 'Cerrar mes';
+  btn.className = 'btn-close'+(closed?' closed':'');
+  if(activeView==='historial') renderHistorial();
+  else if(activeView==='calendario') renderCalendario();
+  else renderClient();
+}
+
+function selectClient(i) { activeClient=i; activeView='client'; render(); }
+function selectView(v) { activeView=v; render(); }
+function changeMonth(d) {
+  currentMonth += d;
+  if(currentMonth>11){currentMonth=0;currentYear++;}
+  if(currentMonth<0){currentMonth=11;currentYear--;}
+  render();
+}
+
+function startApp() {
+  loadState(function() {
+    render();
+  });
+}
+
+// Wait briefly for the Firebase module <script type="module"> to set window.__fb.
+// Modules load async, so we poll for a short window then proceed with whatever we have
+// (loadState() itself handles the case where window.__fb never appears - offline mode).
+(function waitForFirebase(attempts) {
+  if (window.__fbReady || attempts <= 0) { startApp(); return; }
+  setTimeout(function(){ waitForFirebase(attempts-1); }, 100);
+})(20);
+</script>
+</body>
+</html>
