@@ -121,7 +121,7 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
 .b-purple{background:var(--p-100);color:var(--p-700);}
 
 /* ===== Metrics ===== */
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px;}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:26px;}
 .metric{background:var(--bg2);border:1px solid var(--br2);border-radius:var(--radius-lg);padding:18px 20px;transition:transform var(--dur-base) var(--ease-out),box-shadow var(--dur-base) var(--ease-out);}
 .metric:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);}
 .metric-label{font-size:11.5px;color:var(--tx2);margin-bottom:7px;font-weight:600;}
@@ -139,10 +139,13 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
 .item:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);background:var(--bg2);}
 .item.done{opacity:.5;}
 .item.locked{cursor:default;}
+.item.atrasado{border-color:var(--neg);background:var(--neg-bg);}
+.item.atrasado:hover{background:#FBDADC;}
 .chk{width:21px;height:21px;border-radius:50%;border:2px solid var(--br);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background var(--dur-base) var(--ease-out),border-color var(--dur-base) var(--ease-out),transform var(--dur-slow) var(--ease-spring);}
 .item.done .chk{background:var(--pos);border-color:var(--pos);transform:scale(1.08);}
 .chk-i{font-size:12px;color:#fff;display:none;font-weight:700;}
 .item.done .chk-i{display:block;}
+.pitem.done .chk-i{display:block;}
 .item-info{flex:1;}
 .item-name{font-size:14px;font-weight:600;}
 .item.done .item-name{text-decoration:line-through;color:var(--tx2);}
@@ -150,6 +153,7 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
 .item-tag{font-size:11.5px;padding:4px 12px;border-radius:var(--radius-pill);background:var(--bg2);color:var(--tx2);flex-shrink:0;font-weight:600;}
 .item-tag.hoy{background:var(--neg-bg);color:var(--neg-dark);}
 .item-tag.pronto{background:var(--warn-bg);color:var(--warn-dark);}
+.item-tag.atrasado{background:var(--neg);color:#fff;font-weight:700;box-shadow:0 0 0 2px var(--neg-bg);}
 .item-actions{display:flex;gap:4px;flex-shrink:0;}
 
 /* ===== Pendientes ===== */
@@ -389,6 +393,10 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
         <div class="cb-name">Actualizacion por indice</div>
         <div class="cb-type">Honorarios y precios</div>
       </button>
+      <button class="cb" id="btn-tareas" onclick="selectView('tareas')">
+        <div class="cb-name">Tareas del estudio</div>
+        <div class="cb-type" id="btn-tareas-sub">Pendientes sueltas</div>
+      </button>
     </div>
     <div class="sb-footer">
       <div class="mnav">
@@ -461,6 +469,28 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
     <div class="modal-ftr">
       <button class="btn-sm" onclick="closeModal('modal-tasas')">Cancelar</button>
       <button class="btn-primary" onclick="saveTasas()">Guardar tasas</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Tarea suelta del estudio -->
+<div class="overlay hidden" id="modal-tarea">
+  <div class="modal">
+    <div class="modal-title" id="mt-title">Nueva tarea</div>
+    <div class="fg"><label>Titulo</label><input id="mt-titulo" placeholder="Ej: Renovar matricula CPCE"></div>
+    <div class="fg"><label>Descripcion (opcional)</label><textarea id="mt-desc" rows="2" placeholder="Detalle opcional"></textarea></div>
+    <div class="fg-row">
+      <div class="fg"><label>Prioridad</label><select id="mt-prioridad">
+        <option value="urgente">Urgente</option>
+        <option value="importante" selected>Importante</option>
+        <option value="normal">Normal</option>
+      </select></div>
+      <div class="fg"><label>Fecha limite (opcional)</label><input id="mt-fecha" type="date"></div>
+    </div>
+    <input type="hidden" id="mt-id">
+    <div class="modal-ftr">
+      <button class="btn-sm" onclick="closeModal('modal-tarea')">Cancelar</button>
+      <button class="btn-primary" onclick="saveTareaSuelta()">Guardar</button>
     </div>
   </div>
 </div>
@@ -712,6 +742,7 @@ function loadLocalFallback() {
 function ensureDefaults() {
   if (!S.cartera) S.cartera = JSON.parse(JSON.stringify(BASE_CLIENTS[1].carteraDefault));
   if (!S.historial) S.historial = [];
+  if (!S.tareasSueltas) S.tareasSueltas = [];
   // Backfill requiereFactura/sociaId onto pre-existing cartera items
   S.cartera.forEach(function(c) {
     if (typeof c.requiereFactura === 'undefined') c.requiereFactura = true;
@@ -864,7 +895,10 @@ function ck(cid,m,y,id,f) { return cid+'|c|'+y+'-'+m+'|'+id+'|'+f; }
 function isClosed(m,y) { return !!(S.historial||[]).find(function(h){return h.month===m&&h.year===y;}); }
 
 function fmt(n) { return '$'+Math.round(n).toLocaleString('es-AR'); }
-function dayTag(dia) {
+function dayTag(dia, done) {
+  var viewDate = new Date(currentYear, currentMonth, dia);
+  var todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (!done && viewDate < todayDate) return 'atrasado';
   if (currentMonth !== today.getMonth() || currentYear !== today.getFullYear()) return '';
   var d = today.getDate();
   if (dia === d) return 'hoy';
@@ -1662,6 +1696,116 @@ function toggleRecatDone(cid) {
   save(); render();
 }
 
+/* ============== TAREAS SUELTAS DEL ESTUDIO ============== */
+function openAddTarea() {
+  document.getElementById('mt-title').textContent = 'Nueva tarea';
+  document.getElementById('mt-titulo').value = '';
+  document.getElementById('mt-desc').value = '';
+  document.getElementById('mt-prioridad').value = 'importante';
+  document.getElementById('mt-fecha').value = '';
+  document.getElementById('mt-id').value = '';
+  document.getElementById('modal-tarea').classList.remove('hidden');
+}
+function openEditTarea(id) {
+  var t = (S.tareasSueltas||[]).find(function(x){return x.id===id;});
+  if (!t) return;
+  document.getElementById('mt-title').textContent = 'Editar tarea';
+  document.getElementById('mt-titulo').value = t.titulo;
+  document.getElementById('mt-desc').value = t.desc||'';
+  document.getElementById('mt-prioridad').value = t.prioridad||'importante';
+  document.getElementById('mt-fecha').value = t.fecha||'';
+  document.getElementById('mt-id').value = id;
+  document.getElementById('modal-tarea').classList.remove('hidden');
+}
+function saveTareaSuelta() {
+  var titulo = document.getElementById('mt-titulo').value.trim();
+  var desc = document.getElementById('mt-desc').value.trim();
+  var prioridad = document.getElementById('mt-prioridad').value;
+  var fecha = document.getElementById('mt-fecha').value;
+  var eid = document.getElementById('mt-id').value;
+  if (!titulo) { alert('El titulo es obligatorio.'); return; }
+  if (!S.tareasSueltas) S.tareasSueltas = [];
+  if (eid) {
+    var i = S.tareasSueltas.findIndex(function(x){return x.id===eid;});
+    if (i>-1) S.tareasSueltas[i] = Object.assign(S.tareasSueltas[i], {titulo:titulo, desc:desc, prioridad:prioridad, fecha:fecha||null});
+  } else {
+    S.tareasSueltas.push({id:'task_'+Date.now(), titulo:titulo, desc:desc, prioridad:prioridad, fecha:fecha||null, done:false, createdAt:todayISO()});
+  }
+  save(); closeModal('modal-tarea'); render();
+}
+function toggleTareaSuelta(id) {
+  var t = (S.tareasSueltas||[]).find(function(x){return x.id===id;});
+  if (!t) return;
+  t.done = !t.done;
+  save(); render();
+}
+function deleteTareaSuelta(id) {
+  if (!confirm('Eliminar esta tarea?')) return;
+  S.tareasSueltas = (S.tareasSueltas||[]).filter(function(x){return x.id!==id;});
+  save(); render();
+}
+function tareaIsOverdue(t) {
+  if (!t.fecha || t.done) return false;
+  var p = t.fecha.split('-');
+  var fDate = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+  var todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return fDate < todayDate;
+}
+function renderTareas() {
+  var tareas = S.tareasSueltas||[];
+  var pendientes = tareas.filter(function(t){return !t.done;});
+  var completadas = tareas.filter(function(t){return t.done;});
+  var atrasadasCount = pendientes.filter(tareaIsOverdue).length;
+
+  var h = backupBar();
+  h += '<div class="pg-title">Tareas del estudio</div>';
+  h += '<div class="pg-meta" style="margin-bottom:16px;">Pendientes sueltas que no estan atadas a un cliente puntual.</div>';
+
+  h += '<div class="metrics" style="grid-template-columns:repeat(3,1fr);">';
+  h += '<div class="metric"><div class="metric-label">Pendientes</div><div class="metric-val amber">'+pendientes.length+'</div></div>';
+  h += '<div class="metric"><div class="metric-label">Atrasadas</div><div class="metric-val'+(atrasadasCount>0?' red':'')+'">'+atrasadasCount+'</div></div>';
+  h += '<div class="metric"><div class="metric-label">Completadas</div><div class="metric-val green">'+completadas.length+'</div></div>';
+  h += '</div>';
+
+  h += '<div class="section"><div class="sec-title">Pendientes<button class="btn-sm" onclick="openAddTarea()">+ Nueva tarea</button></div>';
+  if (!pendientes.length) {
+    h += '<div class="empty-state"><div class="empty-state-title">No hay tareas pendientes</div><div class="empty-state-desc">Usa "+ Nueva tarea" para anotar algo suelto del estudio.</div></div>';
+  } else {
+    ['urgente','importante','normal'].forEach(function(pr) {
+      var items = pendientes.filter(function(t){return (t.prioridad||'importante')===pr;});
+      if (!items.length) return;
+      h += '<div class="sub-label">'+pr+'</div>';
+      items.forEach(function(t) {
+        var overdue = tareaIsOverdue(t);
+        h += '<div class="pitem'+(overdue?' atrasado':'')+'" style="cursor:default;">';
+        h += '<div class="pchk" onclick="toggleTareaSuelta(\''+t.id+'\')" style="cursor:pointer;"><span class="chk-i">&#10003;</span></div>';
+        h += '<div class="item-info" onclick="toggleTareaSuelta(\''+t.id+'\')" style="cursor:pointer;">';
+        h += '<div class="item-name">'+t.titulo+' <span class="badge b-'+(pr==='urgente'?'red':pr==='importante'?'amber':'gray')+'">'+pr+'</span>'+(overdue?' <span class="badge b-red">atrasada</span>':'')+'</div>';
+        if (t.desc) h += '<div class="item-desc">'+t.desc+'</div>';
+        if (t.fecha) h += '<div class="item-desc">Fecha limite: '+fmtFechaCorta(t.fecha)+'</div>';
+        h += '</div>';
+        h += '<div style="display:flex;gap:4px;flex-shrink:0;"><button class="btn-sm" onclick="openEditTarea(\''+t.id+'\')">Editar</button><button class="btn-danger" onclick="deleteTareaSuelta(\''+t.id+'\')">X</button></div>';
+        h += '</div>';
+      });
+    });
+  }
+  h += '</div>';
+
+  if (completadas.length) {
+    h += '<div class="section"><div class="sec-title">Completadas</div>';
+    completadas.forEach(function(t) {
+      h += '<div class="pitem done">';
+      h += '<div class="pchk" onclick="toggleTareaSuelta(\''+t.id+'\')" style="cursor:pointer;"><span class="chk-i">&#10003;</span></div>';
+      h += '<div class="item-info" onclick="toggleTareaSuelta(\''+t.id+'\')" style="cursor:pointer;"><div class="item-name">'+t.titulo+'</div></div>';
+      h += '<div><button class="btn-danger" onclick="deleteTareaSuelta(\''+t.id+'\')">X</button></div>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  document.getElementById('main').innerHTML = h;
+}
+
 /* ============== CREDITO FISCAL IVA: saldo a favor mensual ============== */
 function ivaKey(cid,y,m) { return cid+'|iva|'+y+'-'+m; }
 function getIvaSaldo(cid,y,m) { var v = S[ivaKey(cid,y,m)]; return (v===undefined||v===null) ? null : v; }
@@ -1896,8 +2040,14 @@ function renderClient() {
 
   h += '<div class="metrics">';
   h += '<div class="metric"><div class="metric-label">Vencimientos</div><div class="metric-val">'+totalV+'</div></div>';
+  var atrasados = cl.venc.filter(function(v){
+    var done = !!S[vk(cid,currentMonth,currentYear,v.id)];
+    return dayTag(v.dia, done) === 'atrasado';
+  }).length;
+
   h += '<div class="metric"><div class="metric-label">Cumplidos</div><div class="metric-val green">'+doneV+'</div></div>';
   h += '<div class="metric"><div class="metric-label">Pendientes</div><div class="metric-val amber">'+(totalV-doneV)+'</div></div>';
+  h += '<div class="metric"><div class="metric-label">Atrasados</div><div class="metric-val'+(atrasados>0?' red':'')+'">'+atrasados+'</div></div>';
   h += '<div class="metric"><div class="metric-label">Tareas abiertas</div><div class="metric-val red">'+totalP+'</div></div>';
   h += '</div>';
 
@@ -1907,12 +2057,13 @@ function renderClient() {
     h += '<div class="section"><div class="sec-title">Vencimientos del mes</div>';
     h += cl.venc.map(function(v) {
       var done = !!S[vk(cid,currentMonth,currentYear,v.id)];
-      var dt = dayTag(v.dia);
+      var dt = dayTag(v.dia, done);
       var click = closed ? '' : ' onclick="tv(\''+cid+'\',\''+v.id+'\')"';
-      return '<div class="item'+(done?' done':'')+(closed?' locked':'')+'"'+click+'>'+
+      var tagLabel = 'Dia '+v.dia+(dt==='hoy'?' - hoy':dt==='pronto'?' - pronto':dt==='atrasado'?' - atrasado':'');
+      return '<div class="item'+(done?' done':'')+(closed?' locked':'')+(dt==='atrasado'?' atrasado':'')+'"'+click+'>'+
         '<div class="chk"><span class="chk-i">&#10003;</span></div>'+
         '<div class="item-info"><div class="item-name">'+v.name+'</div><div class="item-desc">'+(v.desc||'')+'</div></div>'+
-        '<div class="item-tag'+(dt?' '+dt:'')+'">Dia '+v.dia+(dt==='hoy'?' - hoy':dt==='pronto'?' - pronto':'')+'</div>'+
+        '<div class="item-tag'+(dt?' '+dt:'')+'">'+tagLabel+'</div>'+
       '</div>';
     }).join('');
     h += '</div>';
@@ -2220,6 +2371,9 @@ function render() {
   document.getElementById('btn-cal').className = 'cb'+(activeView==='calendario'?' active':'');
   document.getElementById('btn-intereses').className = 'cb'+(activeView==='intereses'?' active':'');
   document.getElementById('btn-ipcupdate').className = 'cb'+(activeView==='ipcupdate'?' active':'');
+  document.getElementById('btn-tareas').className = 'cb'+(activeView==='tareas'?' active':'');
+  var tareasPend = (S.tareasSueltas||[]).filter(function(t){return !t.done;}).length;
+  document.getElementById('btn-tareas-sub').textContent = tareasPend>0 ? tareasPend+' pendiente'+(tareasPend!==1?'s':'') : 'Sin pendientes';
   var closed = isClosed(currentMonth,currentYear);
   var btn = document.getElementById('btn-cerrar');
   btn.textContent = closed ? 'Mes cerrado' : 'Cerrar mes';
@@ -2228,6 +2382,7 @@ function render() {
   else if(activeView==='calendario') renderCalendario();
   else if(activeView==='intereses') renderIntereses();
   else if(activeView==='ipcupdate') renderIpcUpdate();
+  else if(activeView==='tareas') renderTareas();
   else renderClient();
   retriggerViewAnimation();
 }
