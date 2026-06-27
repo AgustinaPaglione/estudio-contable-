@@ -392,6 +392,34 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
   .metrics{grid-template-columns:1fr 1fr !important;}
   .item-tag{font-size:10px;padding:3px 8px;}
 }
+
+/* ===== VEPs y DDJJ ===== */
+.vep-table{width:100%;border-collapse:collapse;font-size:13px;}
+.vep-table th{font-size:11px;font-weight:700;color:var(--tx2);text-align:left;padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--br);text-transform:uppercase;letter-spacing:.04em;}
+.vep-table td{padding:11px 12px;border-bottom:1px solid var(--br2);vertical-align:middle;}
+.vep-table tr:hover td{background:var(--bg2);}
+.ddjj-btn{font-size:11.5px;padding:5px 13px;border-radius:var(--radius-pill);border:1px solid var(--br);background:var(--bg2);cursor:pointer;font-weight:600;transition:background var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-spring);white-space:nowrap;}
+.ddjj-btn:hover{transform:scale(1.05);}
+.ddjj-btn.st-esperando{background:var(--warn-bg);color:var(--warn-dark);border-color:var(--warn);}
+.ddjj-btn.st-preparada{background:var(--blue-bg);color:var(--p-700);border-color:var(--p-300);}
+.ddjj-btn.st-presentada{background:var(--pos-bg);color:var(--pos-dark);border-color:var(--pos);}
+/* ===== Planes globales ===== */
+.plan-global-card{background:#fff;border:1px solid var(--br2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:10px;transition:transform var(--dur-base) var(--ease-out),box-shadow var(--dur-base) var(--ease-out);}
+.plan-global-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+.plan-global-card.alerta-fin{border-color:var(--warn);background:var(--warn-bg);}
+/* ===== Libro IVA ===== */
+.iva-libro-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.iva-result-box{padding:16px 20px;border-radius:var(--radius-lg);font-size:16px;font-weight:700;font-family:var(--font-mono);margin-bottom:12px;}
+.iva-result-pagar{background:var(--neg-bg);color:var(--neg-dark);}
+.iva-result-favor{background:var(--pos-bg);color:var(--pos-dark);}
+.iva-result-cero{background:var(--bg2);color:var(--tx2);}
+.iva-libro-input{width:100%;padding:10px 13px;border:1px solid var(--br);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font-mono);transition:border-color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out);}
+.iva-libro-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--p-100);}
+.iva-big-val{font-size:22px;font-weight:700;font-family:var(--font-mono);padding:10px 0;}
+@media (max-width:860px){
+  .iva-libro-grid{grid-template-columns:1fr !important;}
+  .vep-table{min-width:560px;}
+}
 </style>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -469,6 +497,18 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
       <button class="cb" id="btn-guardias" onclick="selectView('guardias')">
         <div class="cb-name">Facturacion de guardias</div>
         <div class="cb-type">Distribuir por tope AFIP</div>
+      </button>
+      <button class="cb" id="btn-ganancias" onclick="selectView('ganancias')">
+        <div class="cb-name">Ganancias 4ta Cat.</div>
+        <div class="cb-type">Calculadora simplificada</div>
+      </button>
+      <button class="cb" id="btn-recat" onclick="selectView('recategorizacion')">
+        <div class="cb-name">Recategorizacion</div>
+        <div class="cb-type">Monotributo - todos los clientes</div>
+      </button>
+      <button class="cb" id="btn-libroiva" onclick="selectView('libroiva')">
+        <div class="cb-name">Libro IVA</div>
+        <div class="cb-type">Debito / Credito fiscal</div>
       </button>
     </div>
     <div class="sb-footer">
@@ -564,6 +604,46 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
     <div class="modal-ftr">
       <button class="btn-sm" onclick="closeModal('modal-tarea')">Cancelar</button>
       <button class="btn-primary" onclick="saveTareaSuelta()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Ganancias - editar parametros -->
+<div class="overlay hidden" id="modal-ganancias">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-title">Parametros — Ganancias 4ta Categoria</div>
+    <div class="fg"><label>Nota de vigencia</label><input id="ge-vigencia" placeholder="Ej: Valores 2025 — RG ARCA 5xxx/2025"></div>
+    <div class="sub-label">Deducciones personales</div>
+    <div class="fg-row">
+      <div class="fg"><label>MNI anual ($)</label><input id="ge-mni" type="number"></div>
+      <div class="fg"><label>Ded. especial preferencial ($)</label><input id="ge-dep" type="number"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Ded. especial basica ($)</label><input id="ge-deb" type="number"></div>
+      <div class="fg"><label>Conyuge / conviviente ($)</label><input id="ge-conyuge" type="number"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Hijo / hijastro menor ($)</label><input id="ge-hijo" type="number"></div>
+      <div class="fg"><label>Otro dependiente (padre, hermano, etc.) ($)</label><input id="ge-otro-dep" type="number"></div>
+    </div>
+    <div class="sub-label">Topes y porcentajes — deducciones generales</div>
+    <div class="fg-row">
+      <div class="fg"><label>Tope seguro de vida ($)</label><input id="ge-t-seguro" type="number"></div>
+      <div class="fg"><label>Tope intereses hipotecarios ($)</label><input id="ge-t-hipo" type="number"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Tope medicina prepaga (% gan. neta)</label><input id="ge-pct-prepaga" type="number" step="0.1"></div>
+      <div class="fg"><label>Tope donaciones (% gan. neta)</label><input id="ge-pct-don" type="number" step="0.1"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Gastos medicos deducibles (%)</label><input id="ge-pct-gto-med" type="number" step="1"></div>
+      <div class="fg"><label>Alquiler deducible (%)</label><input id="ge-pct-alq" type="number" step="1"></div>
+    </div>
+    <div class="sub-label">Escala progresiva (9 tramos)</div>
+    <div id="ge-escala" style="overflow-x:auto;"></div>
+    <div class="modal-ftr">
+      <button class="btn-sm" onclick="closeModal('modal-ganancias')">Cancelar</button>
+      <button class="btn-primary" onclick="saveGanConfig()">Guardar parametros</button>
     </div>
   </div>
 </div>
@@ -865,6 +945,7 @@ function ensureDefaults() {
   });
   if (!S.tasasInteres) S.tasasInteres = JSON.parse(JSON.stringify(DEFAULT_TASAS_INTERES));
   if (!S.tasasVigencia) S.tasasVigencia = DEFAULT_TASAS_VIGENCIA;
+  if (!S.ganCalc) S.ganCalc = {nombre:'',tipo:'autonomo',ingresos:null,gastos_act:null,aportes_jub:null,aportes_dep:null,seguro_vida:null,int_hipo:null,prepaga:null,gtos_medicos:null,alquiler:null,donaciones:null,aportes_retiro:null,ded_tipo:'pref',conyuge:false,hijos:0,otros_dep:0,retenciones:null,percepciones:null,anticipos:null,saldo_ant:null};
   // Correccion unica: el punitorio se habia sembrado en 3% antes de confirmar el valor real (3.5%).
   // Solo se corrige si nunca se edito a mano (sigue siendo exactamente el valor auto-sembrado viejo).
   if (S.tasasInteres.resarcitorio === 2.75 && S.tasasInteres.punitorio === 3) {
@@ -2549,6 +2630,540 @@ function renderMonotributoSection(cl, cid, closed) {
   return h;
 }
 
+/* ============== VEPs DEL MES ============== */
+/* ============== CALCULADORA GANANCIAS 4TA CATEGORIA ============== */
+var GAN_DEFAULT_VIGENCIA = 'Estimados 2025 — Verificar y actualizar con RG ARCA del periodo';
+var GAN_DEFAULT = {
+  mni:7003234, ded_pref:26612289, ded_basica:7003234,
+  conyuge:6491957, hijo:3245978, otro_dep:3245978,
+  tope_seguro:150000, tope_hipo:500000,
+  pct_prepaga:5, pct_don:5, pct_gto_med:40, pct_alq:40,
+  escala:[
+    {d:0,        h:419030,    c:0,        p:5},
+    {d:419030,   h:838060,    c:20951,    p:9},
+    {d:838060,   h:1257090,   c:58663,    p:12},
+    {d:1257090,  h:2514180,   c:108925,   p:15},
+    {d:2514180,  h:5028360,   c:297497,   p:19},
+    {d:5028360,  h:7542540,   c:775224,   p:23},
+    {d:7542540,  h:10056720,  c:1353012,  p:27},
+    {d:10056720, h:12570900,  c:2031921,  p:31},
+    {d:12570900, h:null,      c:2811291,  p:35}
+  ]
+};
+function getGanCfg() { return S.ganConfig || GAN_DEFAULT; }
+function getGanVig() { return S.ganVigencia || GAN_DEFAULT_VIGENCIA; }
+function getGanCalc() {
+  return S.ganCalc || {
+    nombre:'', tipo:'autonomo', ingresos:null,
+    gastos_act:null, aportes_jub:null, aportes_dep:null,
+    seguro_vida:null, int_hipo:null, prepaga:null,
+    gtos_medicos:null, alquiler:null, donaciones:null, aportes_retiro:null,
+    ded_tipo:'pref', conyuge:false, hijos:0, otros_dep:0,
+    retenciones:null, percepciones:null, anticipos:null, saldo_ant:null
+  };
+}
+
+function calcImpuestoTramos(gni, escala) {
+  var tramos = [], restante = gni;
+  for (var i = 0; i < escala.length && restante > 0; i++) {
+    var t = escala[i], lim = t.h !== null ? t.h - t.d : Infinity;
+    var base = Math.min(restante, lim);
+    if (base > 0) { tramos.push({pct:t.p, base:base, imp:Math.round(base * t.p / 100)}); restante -= base; }
+  }
+  return tramos;
+}
+
+function ganFlushCalc() {
+  function gv(id){var el=document.getElementById(id);return el?el.value:'';}
+  function gn(id){var v=parseFloat(gv(id));return isNaN(v)?null:v;}
+  function gb(id){var el=document.getElementById(id);return el?el.checked:false;}
+  function gi(id){var v=parseInt(gv(id));return isNaN(v)?0:v;}
+  S.ganCalc = {
+    nombre:gv('gan-nombre'), tipo:gv('gan-tipo'), ingresos:gn('gan-ingresos'),
+    gastos_act:gn('gan-gastos-act'), aportes_jub:gn('gan-aportes-jub'), aportes_dep:gn('gan-aportes-dep'),
+    seguro_vida:gn('gan-seguro'), int_hipo:gn('gan-hipo'),
+    prepaga:gn('gan-prepaga'), gtos_medicos:gn('gan-gtos-med'),
+    alquiler:gn('gan-alquiler'), donaciones:gn('gan-donaciones'), aportes_retiro:gn('gan-aportes-retiro'),
+    ded_tipo:gv('gan-ded-tipo'), conyuge:gb('gan-conyuge'),
+    hijos:gi('gan-hijos'), otros_dep:gi('gan-otros-dep'),
+    retenciones:gn('gan-retenciones'), percepciones:gn('gan-percepciones'),
+    anticipos:gn('gan-anticipos'), saldo_ant:gn('gan-saldo-ant')
+  };
+  save(); render();
+}
+
+function openGanEditor() {
+  var cfg = getGanCfg();
+  var flds = {'ge-mni':cfg.mni,'ge-dep':cfg.ded_pref,'ge-deb':cfg.ded_basica,'ge-conyuge':cfg.conyuge,
+    'ge-hijo':cfg.hijo,'ge-otro-dep':cfg.otro_dep||cfg.hijo,
+    'ge-t-seguro':cfg.tope_seguro||150000,'ge-t-hipo':cfg.tope_hipo||500000,
+    'ge-pct-prepaga':cfg.pct_prepaga||5,'ge-pct-don':cfg.pct_don||5,
+    'ge-pct-gto-med':cfg.pct_gto_med||40,'ge-pct-alq':cfg.pct_alq||40};
+  Object.keys(flds).forEach(function(k){var el=document.getElementById(k);if(el)el.value=flds[k];});
+  document.getElementById('ge-vigencia').value = getGanVig();
+  var h='<table style="width:100%;font-size:13px;border-collapse:collapse;"><thead><tr>';
+  h+='<th style="padding:5px 7px;background:var(--bg2);border-bottom:1px solid var(--br);text-align:left;font-size:11px;">Desde</th>';
+  h+='<th style="padding:5px 7px;background:var(--bg2);border-bottom:1px solid var(--br);text-align:left;font-size:11px;">Hasta</th>';
+  h+='<th style="padding:5px 7px;background:var(--bg2);border-bottom:1px solid var(--br);text-align:left;font-size:11px;">Cuota fija</th>';
+  h+='<th style="padding:5px 7px;background:var(--bg2);border-bottom:1px solid var(--br);text-align:left;font-size:11px;">%</th></tr></thead><tbody>';
+  cfg.escala.forEach(function(t){
+    var inp='style="width:100%;padding:3px 5px;border:1px solid var(--br);border-radius:4px;font-size:12px;"';
+    h+='<tr><td style="padding:3px 4px;border-bottom:1px solid var(--br2);"><input type="number" class="ge-d" value="'+t.d+'" '+inp+'></td>';
+    h+='<td style="padding:3px 4px;border-bottom:1px solid var(--br2);"><input type="number" class="ge-h" value="'+(t.h!==null?t.h:'')+'" placeholder="∞" '+inp+'></td>';
+    h+='<td style="padding:3px 4px;border-bottom:1px solid var(--br2);"><input type="number" class="ge-c" value="'+t.c+'" '+inp+'></td>';
+    h+='<td style="padding:3px 4px;border-bottom:1px solid var(--br2);"><input type="number" class="ge-p" value="'+t.p+'" style="width:55px;padding:3px 5px;border:1px solid var(--br);border-radius:4px;font-size:12px;"></td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('ge-escala').innerHTML=h;
+  document.getElementById('modal-ganancias').classList.remove('hidden');
+}
+
+function saveGanConfig() {
+  var escala=[];
+  document.querySelectorAll('#ge-escala tbody tr').forEach(function(row){
+    var hv=row.querySelector('.ge-h').value;
+    escala.push({d:parseFloat(row.querySelector('.ge-d').value)||0,h:hv===''?null:parseFloat(hv)||null,c:parseFloat(row.querySelector('.ge-c').value)||0,p:parseFloat(row.querySelector('.ge-p').value)||0});
+  });
+  function gn(id){return parseFloat(document.getElementById(id).value)||0;}
+  S.ganConfig={mni:gn('ge-mni'),ded_pref:gn('ge-dep'),ded_basica:gn('ge-deb'),conyuge:gn('ge-conyuge'),
+    hijo:gn('ge-hijo'),otro_dep:gn('ge-otro-dep'),
+    tope_seguro:gn('ge-t-seguro'),tope_hipo:gn('ge-t-hipo'),
+    pct_prepaga:gn('ge-pct-prepaga'),pct_don:gn('ge-pct-don'),
+    pct_gto_med:gn('ge-pct-gto-med'),pct_alq:gn('ge-pct-alq'),escala:escala};
+  S.ganVigencia=document.getElementById('ge-vigencia').value.trim()||GAN_DEFAULT_VIGENCIA;
+  save(); closeModal('modal-ganancias'); render();
+}
+
+function renderGanancias() {
+  var cfg = getGanCfg(), calc = getGanCalc();
+  var esDep = calc.tipo === 'dependencia';
+
+  // ── Calculos ──
+  var ingresos    = calc.ingresos    || 0;
+  var gastosAct   = calc.gastos_act  || 0;
+  var aportesJub  = calc.aportes_jub || 0;
+  var aportesDep  = calc.aportes_dep || 0;
+  var dedAct      = gastosAct + aportesJub + aportesDep;
+  var ganNeta1    = Math.max(0, ingresos - dedAct);
+
+  var seguro   = Math.min(calc.seguro_vida   || 0, cfg.tope_seguro || 150000);
+  var hipo     = Math.min(calc.int_hipo      || 0, cfg.tope_hipo   || 500000);
+  var prepaga  = Math.min(calc.prepaga       || 0, ganNeta1 * (cfg.pct_prepaga || 5) / 100);
+  var gtosMed  = Math.min((calc.gtos_medicos || 0) * (cfg.pct_gto_med || 40) / 100, ganNeta1 * 0.05);
+  var alquiler = Math.min((calc.alquiler     || 0) * (cfg.pct_alq   || 40) / 100, cfg.mni);
+  var donac    = Math.min(calc.donaciones    || 0, ganNeta1 * (cfg.pct_don || 5) / 100);
+  var retiro   = calc.aportes_retiro || 0;
+  var dedGen   = seguro + hipo + prepaga + gtosMed + alquiler + donac + retiro;
+  var ganNeta2 = Math.max(0, ganNeta1 - dedGen);
+
+  var dedEsp     = calc.ded_tipo === 'basica' ? cfg.ded_basica : cfg.ded_pref;
+  var dedConyuge = calc.conyuge ? cfg.conyuge : 0;
+  var dedHijos   = (calc.hijos    || 0) * cfg.hijo;
+  var dedOtros   = (calc.otros_dep|| 0) * (cfg.otro_dep || cfg.hijo);
+  var dedPers    = cfg.mni + dedEsp + dedConyuge + dedHijos + dedOtros;
+  var gni        = Math.max(0, ganNeta2 - dedPers);
+
+  var tramos   = calcImpuestoTramos(gni, cfg.escala);
+  var impuesto = tramos.reduce(function(s,t){return s+t.imp;},0);
+
+  var ret      = calc.retenciones  || 0;
+  var perc     = calc.percepciones || 0;
+  var ant      = calc.anticipos    || 0;
+  var saldoAnt = calc.saldo_ant    || 0;
+  var pagos    = ret + perc + ant + saldoAnt;
+  var saldo    = impuesto - pagos;
+
+  // ── Helpers ──
+  var INP = 'style="width:100%;padding:7px 10px;border:1px solid var(--br);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);color:var(--tx1);"';
+  function ni(id, val) { return '<input type="number" id="'+id+'" '+INP+' value="'+(val!==null&&val!==undefined?val:'')+'" placeholder="0" onblur="ganFlushCalc()">'; }
+  function tR(lbl,val,bold,col,ind) {
+    var p=bold?'padding:8px 11px;border-bottom:1px solid var(--br);background:var(--bg2);font-weight:700;':'padding:7px 11px;border-bottom:1px solid var(--br2);';
+    var c=col?'color:'+col+';':''; var pl=ind?'padding-left:20px;':'';
+    return '<tr><td style="'+p+pl+'">'+lbl+'</td><td style="'+p+'text-align:right;font-family:var(--font-mono);'+c+'">'+fmt(Math.round(val))+'</td></tr>';
+  }
+  function topeNote(pagado, efectivo) {
+    if (!pagado) return '';
+    var capped = pagado > efectivo + 1;
+    return '<span style="font-size:11px;color:'+(capped?'var(--neg-dark)':'var(--pos-dark)')+';margin-left:6px;">'+(capped?'Tope: ':'OK: ')+fmt(Math.round(efectivo))+'</span>';
+  }
+  function lbl(txt, note) {
+    return '<label style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;font-size:12.5px;font-weight:600;color:var(--tx2);"><span>'+txt+'</span>'+(note||'')+'</label>';
+  }
+  function fg(labelHtml, inputHtml) { return '<div style="margin-bottom:11px;">'+labelHtml+inputHtml+'</div>'; }
+
+  var h = backupBar();
+  h += '<div class="pg-title">Ganancias 4ta Categoria — Presentacion Simplificada</div>';
+  h += '<div class="mono-vigencia">'+getGanVig()+' <button class="btn-sm" onclick="openGanEditor()">Editar parametros</button></div>';
+  h += '<div style="display:grid;grid-template-columns:3fr 2fr;gap:24px;">';
+
+  // ══ COLUMNA IZQUIERDA: inputs ══
+  h += '<div>';
+
+  // Datos
+  h += '<div class="sub-label" style="margin-top:0;">Datos del contribuyente</div>';
+  h += '<div class="fg-row">';
+  h += '<div class="fg">'+lbl('Nombre / referencia')+'<input id="gan-nombre" value="'+escapeHtml(calc.nombre||'')+'" placeholder="Ej: Alfonzo" onblur="ganFlushCalc()" style="width:100%;padding:7px 10px;border:1px solid var(--br);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);color:var(--tx1);"></div>';
+  h += '<div class="fg">'+lbl('Tipo de contribuyente')+'<select id="gan-tipo" onchange="ganFlushCalc()" class="mono-cat-select">';
+  h += '<option value="autonomo"'+(calc.tipo==='autonomo'?' selected':'')+'>Autonomo / Profesional</option>';
+  h += '<option value="dependencia"'+(calc.tipo==='dependencia'?' selected':'')+'>Relacion de dependencia</option>';
+  h += '<option value="jubilado"'+(calc.tipo==='jubilado'?' selected':'')+'>Jubilado / Pensionado</option>';
+  h += '</select></div></div>';
+
+  // Ingresos
+  h += '<div class="sub-label">Ingresos</div>';
+  h += fg(lbl('Ingresos brutos anuales ($)'), ni('gan-ingresos', calc.ingresos));
+
+  // Deducciones actividad
+  h += '<div class="sub-label">Deducciones de la actividad</div>';
+  h += fg(lbl('Gastos inherentes a la actividad ($)'), ni('gan-gastos-act', calc.gastos_act));
+  if (!esDep) {
+    h += fg(lbl('Aportes jubilatorios autonomos — SIPA ($)'), ni('gan-aportes-jub', calc.aportes_jub));
+    h += fg(lbl('Aportes a obra social voluntarios ($)'), ni('gan-aportes-dep', calc.aportes_dep));
+  } else {
+    h += fg(lbl('Aportes obligatorios empleado — jub. + O.S. + PAMI ($)'), ni('gan-aportes-dep', calc.aportes_dep));
+    h += '<input type="hidden" id="gan-aportes-jub" value="">';
+  }
+
+  // Deducciones generales
+  h += '<div class="sub-label">Deducciones generales (art. 85 LIG)</div>';
+  h += fg(lbl('Seguro de vida — primas anuales ($)', topeNote(calc.seguro_vida, seguro)+' <span style="font-size:10px;color:var(--tx3);">tope '+fmt(cfg.tope_seguro||150000)+'</span>'), ni('gan-seguro', calc.seguro_vida));
+  h += fg(lbl('Intereses credito hipotecario vivienda ($)', topeNote(calc.int_hipo, hipo)+' <span style="font-size:10px;color:var(--tx3);">tope '+fmt(cfg.tope_hipo||500000)+'</span>'), ni('gan-hipo', calc.int_hipo));
+  h += fg(lbl('Medicina prepaga — pagado en el ano ($)', ingresos>0?topeNote(calc.prepaga, prepaga)+' <span style="font-size:10px;color:var(--tx3);">tope '+(cfg.pct_prepaga||5)+'% gan.neta</span>':''), ni('gan-prepaga', calc.prepaga));
+  h += fg(lbl('Gastos medicos y paramédicos — total facturado ($)', ingresos>0?'<span style="font-size:10px;color:var(--tx3);">efectivo: '+fmt(Math.round(gtosMed))+' ('+(cfg.pct_gto_med||40)+'%, tope 5% gan.neta)</span>':''), ni('gan-gtos-med', calc.gtos_medicos));
+  h += fg(lbl('Alquiler vivienda — pagado en el ano ($)', ingresos>0?'<span style="font-size:10px;color:var(--tx3);">efectivo: '+fmt(Math.round(alquiler))+' ('+(cfg.pct_alq||40)+'%, tope 1 MNI)</span>':''), ni('gan-alquiler', calc.alquiler));
+  h += fg(lbl('Donaciones ($)', ingresos>0?topeNote(calc.donaciones, donac)+' <span style="font-size:10px;color:var(--tx3);">tope '+(cfg.pct_don||5)+'% gan.neta</span>':''), ni('gan-donaciones', calc.donaciones));
+  h += fg(lbl('Aportes a planes de retiro / mutual ($)'), ni('gan-aportes-retiro', calc.aportes_retiro));
+
+  // Deducciones personales
+  h += '<div class="sub-label">Deducciones personales (art. 30 LIG)</div>';
+  h += '<div style="margin-bottom:11px;">'+lbl('Tipo de deduccion especial');
+  h += '<select id="gan-ded-tipo" onchange="ganFlushCalc()" class="mono-cat-select">';
+  h += '<option value="pref"'+(calc.ded_tipo!=='basica'?' selected':'')+'>Preferencial — autonomos, empleados, docentes ('+fmt(cfg.ded_pref)+')</option>';
+  h += '<option value="basica"'+(calc.ded_tipo==='basica'?' selected':'')+'>Basica — directores SA, socios gerentes ('+fmt(cfg.ded_basica)+')</option>';
+  h += '</select></div>';
+  h += '<div style="margin-bottom:11px;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;"><input type="checkbox" id="gan-conyuge"'+(calc.conyuge?' checked':'')+' onchange="ganFlushCalc()" style="width:auto;accent-color:var(--primary);"> Conyuge / conviviente a cargo <span style="color:var(--tx2);font-size:12px;">('+fmt(cfg.conyuge)+')</span></label></div>';
+  h += '<div class="fg-row">';
+  h += '<div class="fg">'+lbl('Hijos / hijastros menores')+'<input id="gan-hijos" type="number" min="0" value="'+(calc.hijos||0)+'" onblur="ganFlushCalc()" style="width:80px;padding:7px 10px;border:1px solid var(--br);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);color:var(--tx1);"> <span style="font-size:12px;color:var(--tx2);">× '+fmt(cfg.hijo)+'</span></div>';
+  h += '<div class="fg">'+lbl('Otros dependientes (padres, hermanos, etc.)')+'<input id="gan-otros-dep" type="number" min="0" value="'+(calc.otros_dep||0)+'" onblur="ganFlushCalc()" style="width:80px;padding:7px 10px;border:1px solid var(--br);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);color:var(--tx1);"> <span style="font-size:12px;color:var(--tx2);">× '+fmt(cfg.otro_dep||cfg.hijo)+'</span></div>';
+  h += '</div>';
+
+  // Pagos a cuenta
+  h += '<div class="sub-label">Pagos a cuenta</div>';
+  h += fg(lbl(esDep ? 'Retenciones del empleador — Form. 1357 ($)' : 'Retenciones sufridas ($)'), ni('gan-retenciones', calc.retenciones));
+  h += fg(lbl('Percepciones (tarjeta exterior, operaciones, etc.) ($)'), ni('gan-percepciones', calc.percepciones));
+  h += fg(lbl('Anticipos ingresados en el ano ($)'), ni('gan-anticipos', calc.anticipos));
+  h += fg(lbl('Saldo a favor del periodo anterior ($)'), ni('gan-saldo-ant', calc.saldo_ant));
+
+  h += '</div>'; // end left column
+
+  // ══ COLUMNA DERECHA: liquidacion ══
+  h += '<div>';
+  h += '<div class="sub-label" style="margin-top:0;position:sticky;top:16px;">Liquidacion</div>';
+  h += '<div style="position:sticky;top:42px;">';
+
+  if (!ingresos) {
+    h += '<div class="iva-stagnant">Ingresa los ingresos brutos para ver la liquidacion.</div>';
+  } else {
+    h += '<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-bottom:12px;"><tbody>';
+    h += tR('Ingresos brutos', ingresos, false, null, false);
+    if (gastosAct)  h += tR('(-) Gastos actividad', gastosAct, false, 'var(--tx2)', true);
+    if (aportesJub) h += tR('(-) Aportes jub. autonomos', aportesJub, false, 'var(--tx2)', true);
+    if (aportesDep) h += tR('(-) Aportes oblig. / O.S.', aportesDep, false, 'var(--tx2)', true);
+    h += tR('Ganancia neta 1ra etapa', ganNeta1, true, null, false);
+    if (seguro)   h += tR('(-) Seguro de vida', seguro, false, 'var(--tx2)', true);
+    if (hipo)     h += tR('(-) Intereses hipotecarios', hipo, false, 'var(--tx2)', true);
+    if (prepaga)  h += tR('(-) Medicina prepaga', prepaga, false, 'var(--tx2)', true);
+    if (gtosMed)  h += tR('(-) Gastos medicos ('+Math.round(cfg.pct_gto_med||40)+'%)', gtosMed, false, 'var(--tx2)', true);
+    if (alquiler) h += tR('(-) Alquiler ('+Math.round(cfg.pct_alq||40)+'%)', alquiler, false, 'var(--tx2)', true);
+    if (donac)    h += tR('(-) Donaciones', donac, false, 'var(--tx2)', true);
+    if (retiro)   h += tR('(-) Aportes retiro/mutual', retiro, false, 'var(--tx2)', true);
+    h += tR('Ganancia neta 2da etapa', ganNeta2, true, null, false);
+    h += tR('(-) MNI', cfg.mni, false, 'var(--tx2)', true);
+    h += tR('(-) Ded. especial ('+(calc.ded_tipo==='basica'?'basica':'preferencial')+')', dedEsp, false, 'var(--tx2)', true);
+    if (dedConyuge) h += tR('(-) Conyuge a cargo', dedConyuge, false, 'var(--tx2)', true);
+    if (dedHijos)   h += tR('(-) '+(calc.hijos||0)+' hijo'+(calc.hijos!==1?'s':''), dedHijos, false, 'var(--tx2)', true);
+    if (dedOtros)   h += tR('(-) '+(calc.otros_dep||0)+' otro'+(calc.otros_dep!==1?'s':'')+' dep.', dedOtros, false, 'var(--tx2)', true);
+    h += tR('GANANCIA NETA IMPONIBLE', gni, true, gni>0?'var(--neg-dark)':'var(--pos-dark)', false);
+    h += '</tbody></table>';
+
+    if (gni <= 0) {
+      h += '<div class="iva-result-box iva-result-favor">SIN IMPUESTO — las deducciones superan la ganancia.</div>';
+    } else {
+      h += '<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-bottom:12px;"><tbody>';
+      tramos.forEach(function(t){h+=tR(t.pct+'% sobre '+fmt(t.base),t.imp,false,null,true);});
+      h += tR('Impuesto determinado', impuesto, true, 'var(--neg-dark)', false);
+      h += '</tbody></table>';
+
+      if (pagos > 0) {
+        h += '<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-bottom:12px;"><tbody>';
+        if (ret)      h += tR('(-) Retenciones', ret, false, 'var(--pos-dark)', true);
+        if (perc)     h += tR('(-) Percepciones', perc, false, 'var(--pos-dark)', true);
+        if (ant)      h += tR('(-) Anticipos', ant, false, 'var(--pos-dark)', true);
+        if (saldoAnt) h += tR('(-) Saldo ano anterior', saldoAnt, false, 'var(--pos-dark)', true);
+        h += tR('Total pagos a cuenta', pagos, true, 'var(--pos-dark)', false);
+        h += '</tbody></table>';
+      }
+
+      if (saldo > 0)      h += '<div class="iva-result-box iva-result-pagar">SALDO A INGRESAR: '+fmt(saldo)+'</div>';
+      else if (saldo < 0) h += '<div class="iva-result-box iva-result-favor">SALDO A FAVOR: '+fmt(Math.abs(saldo))+'</div>';
+      else                h += '<div class="iva-result-box iva-result-cero">Sin saldo — pagos a cuenta cubren el impuesto.</div>';
+      h += '<div style="font-size:11.5px;color:var(--tx2);margin-top:8px;">Tasa efectiva: <strong>'+(ingresos>0?(impuesto/ingresos*100).toFixed(1):0)+'%</strong> sobre ingresos brutos</div>';
+    }
+    h += '<div class="iva-stagnant" style="margin-top:14px;font-size:11px;">Calculo orientativo. Verificar con valores ARCA vigentes antes de presentar.</div>';
+  }
+
+  h += '</div></div>'; // sticky + right col
+  h += '</div>'; // grid
+  document.getElementById('main').innerHTML = h;
+}
+
+/* ============== CALCULADORA DE RECATEGORIZACION ============== */
+function renderRecategorizacion() {
+  var allClients = getAllClients().filter(function(c){return !c.bajaFecha;});
+  var allTitulares = [];
+  allClients.forEach(function(cl) {
+    (cl.monotributistas||[]).forEach(function(t) {
+      if (!t.bajaFecha) allTitulares.push({cl:cl, t:t});
+    });
+  });
+  var caps = getCategoriaCaps();
+  var winOpen = isRecatWindow(currentMonth, 15);
+
+  var h = backupBar();
+  h += '<div class="pg-title">Calculadora de recategorizacion - Monotributo</div>';
+  h += '<div class="pg-meta" style="margin-bottom:8px;">Facturacion rolling 12 meses para cada titular. Cambia la categoria directamente desde aqui cuando corresponda.</div>';
+  h += '<div class="mono-vigencia">'+getCategoriaVigencia()+' <button class="btn-sm" onclick="openCapsEditor()">Editar topes</button></div>';
+
+  if (winOpen) {
+    h += '<div class="recat-banner"><span>Ventana de recategorizacion abierta. Revisa cada titular y actualizalo en el portal de ARCA si corresponde.</span></div>';
+  } else {
+    h += '<div class="iva-stagnant" style="margin-bottom:16px;">Proxima ventana de recategorizacion: '+nextRecatLabel(currentMonth, currentYear)+'</div>';
+  }
+
+  if (!allTitulares.length) {
+    h += '<div class="empty-state"><div class="empty-state-title">No hay titulares de monotributo activos</div><div class="empty-state-desc">Agrega titulares de monotributo al editar un cliente.</div></div>';
+  }
+
+  allTitulares.forEach(function(item) {
+    var t = item.t, cl = item.cl;
+    var roll = rolling12(cl.id, t.id, currentYear, currentMonth);
+    var catActual = t.categoria || 'A';
+    var actividad = t.actividad || 'servicios';
+    var sugerida = categoriaSugerida(roll.total);
+    var pct = pctDeCategoria(roll.total, catActual);
+    var barColor = pct>=100 ? 'var(--red)' : pct>=80 ? 'var(--amber)' : 'var(--green)';
+    var cuotaActual = getCuotaMensual(catActual, actividad);
+    var cuotaSugerida = sugerida!=='EXCLUIDO' ? getCuotaMensual(sugerida, actividad) : null;
+    var diferencia = cuotaSugerida !== null ? cuotaSugerida - cuotaActual : null;
+    var cambioNecesario = sugerida !== catActual && roll.conDatos > 0;
+    var needUp = cambioNecesario && sugerida!=='EXCLUIDO' && CATEGORIA_ORDER.indexOf(sugerida) > CATEGORIA_ORDER.indexOf(catActual);
+
+    h += '<div class="mono-card">';
+    h += '<div class="mono-hdr">';
+    h += '<div><div class="mono-name">'+t.nombre+' <span class="badge b-gray">'+cl.name+'</span></div>';
+    h += '<div style="font-size:12px;color:var(--tx2);margin-top:2px;">'+actividad+'</div></div>';
+    if (sugerida==='EXCLUIDO') {
+      h += '<span class="badge b-red">Excluido del monotributo</span>';
+    } else if (cambioNecesario) {
+      h += '<span class="badge '+(needUp?'b-amber':'b-blue')+'">'+(needUp?'Subir a cat. '+sugerida:'Bajar a cat. '+sugerida)+'</span>';
+    } else if (roll.conDatos > 0) {
+      h += '<span class="badge b-green">Categoria correcta</span>';
+    }
+    h += '</div>';
+
+    h += '<div class="mono-row">';
+    h += '<div class="mono-input-group"><label>Categoria actual</label><select class="mono-cat-select" onchange="setMonoCategoria(\''+cl.id+'\',\''+t.id+'\',this.value)">';
+    CATEGORIA_ORDER.forEach(function(c) {
+      h += '<option value="'+c+'"'+(c===catActual?' selected':'')+'>Cat. '+c+' - hasta '+fmt(caps[c]||0)+'/ano</option>';
+    });
+    h += '</select></div>';
+    h += '<div class="mono-input-group"><label>Facturado 12 meses</label><div class="iva-big-val">'+fmt(roll.total)+'</div></div>';
+    h += '<div class="mono-input-group"><label>Uso de la categoria</label><div class="iva-big-val" style="color:'+barColor+';">'+pct+'%</div></div>';
+    h += '</div>';
+    h += '<div class="mono-bar-wrap"><div class="mono-bar"><div class="mono-bar-fill" style="width:'+Math.min(pct,100)+'%;background:'+barColor+'"></div></div></div>';
+    if (roll.conDatos < 12) h += '<div style="font-size:12px;color:var(--tx2);margin-top:6px;">Datos cargados: '+roll.conDatos+'/12 meses.</div>';
+
+    if (cambioNecesario && sugerida!=='EXCLUIDO') {
+      h += '<div class="mono-suggestion" style="background:'+(needUp?'var(--warn-bg)':'var(--blue-bg)')+';color:'+(needUp?'var(--amber)':'var(--blue)')+';">';
+      h += 'Categoria sugerida: <strong>'+sugerida+'</strong> - Cuota: '+fmt(cuotaSugerida);
+      if (diferencia!==null) h += ' ('+(diferencia>0?'+':'')+fmt(diferencia)+' vs cuota actual '+fmt(cuotaActual)+')';
+      h += '</div>';
+    } else if (sugerida==='EXCLUIDO') {
+      h += '<div class="mono-suggestion" style="background:var(--neg-bg);color:var(--neg-dark);">Supera el tope de la categoria K. Evaluar paso a Responsable Inscripto.</div>';
+    }
+    h += '</div>';
+  });
+  document.getElementById('main').innerHTML = h;
+}
+
+
+/* ============== LIBRO IVA SIMPLIFICADO ============== */
+function ivaLibroKey(cid,y,m) { return cid+'|ivalibro|'+y+'-'+m; }
+function getIvaLibro(cid,y,m) {
+  return S[ivaLibroKey(cid,y,m)] || {
+    v_a21:null, v_b21:null, v_a105:null, v_b105:null, nc_ventas:null,
+    c_105:null, c_21:null, c_27:null, nc_compras:null,
+    percepciones:null, retenciones:null,
+    ops_nogen:null, neto_ventas:null, neto_compras:null
+  };
+}
+function setIvaLibro(cid,y,m,field,val) {
+  if(isClosed(m,y)) return;
+  var k = ivaLibroKey(cid,y,m);
+  if (!S[k]) S[k] = {};
+  S[k][field] = (val===''||val===null) ? null : (Math.round(parseFloat(val)*100)/100)||0;
+  save(); render();
+}
+
+function ivaLibroInput(cid,y,m,field,val,dis,placeholder) {
+  return '<input class="iva-libro-input" type="number" step="0.01" placeholder="'+(placeholder||'0')+'" value="'+(val!==null&&val!==undefined?val:'')+'"'+(dis?' disabled':'')+' onblur="setIvaLibro(\''+cid+'\','+y+','+m+',\''+field+'\',this.value)">';
+}
+function fmtIva(n) {
+  if (n===null||n===undefined) return '-';
+  return '$'+n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function renderLibroIva() {
+  var closed = isClosed(currentMonth, currentYear);
+  var allClients = getAllClients().filter(function(c){return !c.bajaFecha && c.creditoIvaActivo;});
+
+  var h = backupBar();
+  h += '<div class="pg-title">Libro IVA - '+MONTHS[currentMonth]+' '+currentYear+'</div>';
+  h += '<div class="pg-meta" style="margin-bottom:16px;">Carga los montos de IVA (debito y credito fiscal) del periodo. El resultado se calcula automaticamente.</div>';
+  if(closed) h += '<div class="closed-banner">Este mes esta cerrado. Solo consulta.</div>';
+
+  if (!allClients.length) {
+    h += '<div class="empty-state"><div class="empty-state-title">No hay clientes RI con seguimiento de IVA activo</div><div class="empty-state-desc">Activa "Hacer seguimiento de credito fiscal IVA" al editar un cliente Responsable Inscripto.</div></div>';
+  }
+
+  allClients.forEach(function(cl) {
+    var cid = cl.id;
+    var L = getIvaLibro(cid, currentYear, currentMonth);
+    var dis = closed;
+
+    // Debito Fiscal (IVA Ventas)
+    var df_a21   = L.v_a21   || 0;
+    var df_b21   = L.v_b21   || 0;
+    var df_a105  = L.v_a105  || 0;
+    var df_b105  = L.v_b105  || 0;
+    var nc_v     = L.nc_ventas || 0;
+    var total_df = df_a21 + df_b21 + df_a105 + df_b105 - nc_v;
+
+    // Credito Fiscal (IVA Compras)
+    var cf_105   = L.c_105   || 0;
+    var cf_21    = L.c_21    || 0;
+    var cf_27    = L.c_27    || 0;
+    var nc_c     = L.nc_compras || 0;
+    var total_cf = cf_105 + cf_21 + cf_27 - nc_c;
+
+    // Saldo técnico del período
+    var st_periodo = total_cf - total_df; // positivo = a favor, negativo = a pagar
+
+    // Saldo técnico período anterior (auto desde mes previo guardado)
+    var pm = currentMonth-1, py = currentYear;
+    if (pm<0) { pm=11; py--; }
+    var st_anterior = getIvaSaldo(cid, py, pm) || 0;
+
+    // Saldo técnico acumulado
+    var st_acumulado = st_periodo + st_anterior;
+
+    // Percepciones y retenciones
+    var percepciones = L.percepciones || 0;
+    var retenciones  = L.retenciones  || 0;
+    var ryp = percepciones + retenciones;
+
+    // Resultado final
+    var neto = st_acumulado + ryp; // positivo = a favor, negativo = a pagar
+    var aPagar     = neto < 0 ? Math.abs(neto) : 0;
+    var saldoFavor = neto >= 0 ? neto : 0;
+
+    var tieneData = (L.v_a21!==null||L.v_b21!==null||L.v_a105!==null||L.v_b105!==null||L.c_21!==null||L.c_105!==null||L.c_27!==null);
+
+    h += '<div class="section"><div class="sec-title">'+cl.name+' — '+cl.type+'</div>';
+
+    // ── IVA VENTAS ──
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px;">';
+
+    h += '<div>';
+    h += '<div class="sub-label" style="margin-top:0;">IVA Ventas — Debito Fiscal</div>';
+    h += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+    h += '<thead><tr><th style="text-align:left;padding:7px 10px;background:var(--bg2);border-bottom:1px solid var(--br);font-size:11px;text-transform:uppercase;letter-spacing:.04em;">Concepto</th><th style="text-align:right;padding:7px 10px;background:var(--bg2);border-bottom:1px solid var(--br);font-size:11px;text-transform:uppercase;letter-spacing:.04em;">Importe DF ($)</th></tr></thead>';
+    h += '<tbody>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Ventas A — 21%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'v_a21',L.v_a21,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Ventas B — 21%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'v_b21',L.v_b21,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Ventas A — 10,5%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'v_a105',L.v_a105,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Ventas B — 10,5%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'v_b105',L.v_b105,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);color:var(--tx2);">Nota de credito ventas (resta DF)</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'nc_ventas',L.nc_ventas,dis)+'</td></tr>';
+    h += '<tr style="background:var(--bg2);font-weight:700;"><td style="padding:9px 10px;">TOTAL DEBITO FISCAL</td><td style="padding:9px 10px;text-align:right;font-family:var(--font-mono);color:var(--neg-dark);">'+fmtIva(total_df)+'</td></tr>';
+    h += '</tbody></table></div>';
+
+    // ── IVA COMPRAS ──
+    h += '<div>';
+    h += '<div class="sub-label" style="margin-top:0;">IVA Compras — Credito Fiscal</div>';
+    h += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+    h += '<thead><tr><th style="text-align:left;padding:7px 10px;background:var(--bg2);border-bottom:1px solid var(--br);font-size:11px;text-transform:uppercase;letter-spacing:.04em;">Concepto</th><th style="text-align:right;padding:7px 10px;background:var(--bg2);border-bottom:1px solid var(--br);font-size:11px;text-transform:uppercase;letter-spacing:.04em;">Importe CF ($)</th></tr></thead>';
+    h += '<tbody>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Compras — 10,5%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'c_105',L.c_105,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Compras — 21%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'c_21',L.c_21,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Compras — 27%</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'c_27',L.c_27,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);color:var(--tx2);">Nota de credito compras (resta CF)</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'nc_compras',L.nc_compras,dis)+'</td></tr>';
+    h += '<tr style="background:var(--bg2);font-weight:700;"><td style="padding:9px 10px;">TOTAL CREDITO FISCAL</td><td style="padding:9px 10px;text-align:right;font-family:var(--font-mono);color:var(--pos-dark);">'+fmtIva(total_cf)+'</td></tr>';
+    h += '</tbody></table></div>';
+
+    h += '</div>'; // end grid ventas/compras
+
+    // ── LIQUIDACION ──
+    h += '<div class="sub-label">Liquidacion</div>';
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:14px;">';
+
+    h += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+    h += '<tbody>';
+    var stPeriodoColor = st_periodo >= 0 ? 'var(--pos-dark)' : 'var(--neg-dark)';
+    var stAcumColor = st_acumulado >= 0 ? 'var(--pos-dark)' : 'var(--neg-dark)';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Total Debito Fiscal</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);text-align:right;font-family:var(--font-mono);color:var(--neg-dark);">'+fmtIva(total_df)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Total Credito Fiscal</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);text-align:right;font-family:var(--font-mono);color:var(--pos-dark);">'+fmtIva(total_cf)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Saldo tecnico del periodo</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);text-align:right;font-family:var(--font-mono);color:'+stPeriodoColor+';">'+(st_periodo>=0?'+':'')+fmtIva(st_periodo)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Saldo tecnico periodo anterior</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);text-align:right;font-family:var(--font-mono);color:var(--pos-dark);">'+(st_anterior>0?'+':'')+fmtIva(st_anterior)+'</td></tr>';
+    h += '<tr style="font-weight:700;background:var(--bg2);"><td style="padding:9px 10px;">Saldo tecnico acumulado</td><td style="padding:9px 10px;text-align:right;font-family:var(--font-mono);color:'+stAcumColor+';">'+(st_acumulado>=0?'+':'')+fmtIva(st_acumulado)+'</td></tr>';
+    h += '</tbody></table>';
+
+    h += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+    h += '<tbody>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Percepciones</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'percepciones',L.percepciones,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Retenciones</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'retenciones',L.retenciones,dis)+'</td></tr>';
+    h += '<tr style="background:var(--bg2);"><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">Saldo libre disponibilidad</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);text-align:right;font-family:var(--font-mono);">'+fmtIva(ryp)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);color:var(--tx2);">Ops. consumidor final / monotributo (informativo)</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'ops_nogen',L.ops_nogen,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;border-bottom:1px solid var(--br2);color:var(--tx2);">Neto gravado ventas (informativo)</td><td style="padding:8px 10px;border-bottom:1px solid var(--br2);">'+ivaLibroInput(cid,currentYear,currentMonth,'neto_ventas',L.neto_ventas,dis)+'</td></tr>';
+    h += '<tr><td style="padding:8px 10px;color:var(--tx2);">Neto gravado compras (informativo)</td><td style="padding:8px 10px;">'+ivaLibroInput(cid,currentYear,currentMonth,'neto_compras',L.neto_compras,dis)+'</td></tr>';
+    h += '</tbody></table>';
+
+    h += '</div>'; // end liquidacion grid
+
+    // ── RESULTADO FINAL ──
+    if (tieneData) {
+      if (aPagar > 0) {
+        h += '<div class="iva-result-box iva-result-pagar">SALDO IMPUESTO A PAGAR: '+fmtIva(aPagar)+'</div>';
+      } else {
+        h += '<div class="iva-result-box iva-result-favor">SALDO A FAVOR: '+fmtIva(saldoFavor)+'</div>';
+        if (!closed) {
+          var curSf = getIvaSaldo(cid, currentYear, currentMonth);
+          if (curSf !== Math.round(saldoFavor)) {
+            h += '<div class="ipc-alert"><span>Saldo a favor calculado: '+fmtIva(saldoFavor)+'. Sincronizalo para que el proximo mes lo tome como saldo anterior automaticamente.</span><button class="btn-sm" onclick="setIvaSaldo(\''+cid+'\','+currentYear+','+currentMonth+','+Math.round(saldoFavor)+')">Sincronizar saldo</button></div>';
+          } else {
+            h += '<div style="font-size:12px;color:var(--pos-dark);margin-top:6px;">&#10003; Saldo a favor sincronizado ('+fmtIva(saldoFavor)+'). El proximo mes lo toma automaticamente como saldo anterior.</div>';
+          }
+        }
+      }
+    } else {
+      h += '<div class="iva-stagnant">Carga los importes de IVA del mes para calcular la liquidacion.</div>';
+    }
+
+    h += '</div>'; // end section
+  });
+
+  document.getElementById('main').innerHTML = h;
+}
+
 /* ============== RENDER PRINCIPAL ============== */
 function render() {
   var allClients = getAllClients();
@@ -2579,6 +3194,9 @@ function render() {
   document.getElementById('btn-ipcupdate').className = 'cb'+(activeView==='ipcupdate'?' active':'');
   document.getElementById('btn-tareas').className = 'cb'+(activeView==='tareas'?' active':'');
   document.getElementById('btn-guardias').className = 'cb'+(activeView==='guardias'?' active':'');
+  document.getElementById('btn-ganancias').className = 'cb'+(activeView==='ganancias'?' active':'');
+  document.getElementById('btn-recat').className = 'cb'+(activeView==='recategorizacion'?' active':'');
+  document.getElementById('btn-libroiva').className = 'cb'+(activeView==='libroiva'?' active':'');
   var tareasPend = (S.tareasSueltas||[]).filter(function(t){return !t.done;}).length;
   document.getElementById('btn-tareas-sub').textContent = tareasPend>0 ? tareasPend+' pendiente'+(tareasPend!==1?'s':'') : 'Sin pendientes';
   var closed = isClosed(currentMonth,currentYear);
@@ -2591,6 +3209,9 @@ function render() {
   else if(activeView==='ipcupdate') renderIpcUpdate();
   else if(activeView==='tareas') renderTareas();
   else if(activeView==='guardias') renderFacturacionGuardias();
+  else if(activeView==='ganancias') renderGanancias();
+  else if(activeView==='recategorizacion') renderRecategorizacion();
+  else if(activeView==='libroiva') renderLibroIva();
   else renderClient();
   retriggerViewAnimation();
 }
