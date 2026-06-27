@@ -330,6 +330,68 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
   .cb,.item,.pitem,.plan-card,.mono-card,.hon-card,.hist-card,.metric,.rcard,.chk,.pchk,.btn-primary,.btn-close,.btn-sm,.btn-danger,.cal-day{transition:none;}
 }
 .app-hidden{display:none;}
+
+/* ===== MOBILE / RESPONSIVE ===== */
+.mobile-topbar{display:none;}
+.hamburger-btn{display:none;}
+.sidebar-overlay{display:none;}
+
+@media (max-width: 860px){
+  .app{flex-direction:column;}
+  .mobile-topbar{
+    display:flex;align-items:center;gap:14px;
+    height:54px;flex-shrink:0;padding:0 16px;
+    background:#fff;border-bottom:1px solid var(--br2);
+    position:sticky;top:0;z-index:300;
+  }
+  .hamburger-btn{
+    display:flex;flex-direction:column;justify-content:center;gap:4px;
+    width:34px;height:34px;border:1px solid var(--br);border-radius:var(--radius-sm);
+    background:#fff;cursor:pointer;flex-shrink:0;padding:0;align-items:center;
+  }
+  .hamburger-btn span{display:block;width:16px;height:2px;background:var(--ink-700);border-radius:2px;}
+  .mobile-topbar-title{font-size:13.5px;font-weight:700;color:var(--ink-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .sidebar{
+    position:fixed;top:0;left:0;height:100vh;width:78vw;max-width:300px;
+    transform:translateX(-100%);transition:transform var(--dur-slow) var(--ease-out);
+    z-index:400;box-shadow:var(--shadow-lg);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay{
+    display:block;position:fixed;inset:0;background:rgba(26,26,31,.45);
+    z-index:350;opacity:0;pointer-events:none;transition:opacity var(--dur-base) var(--ease-out);
+  }
+  .sidebar-overlay.open{opacity:1;pointer-events:auto;}
+
+  .main{padding:18px 16px 60px;}
+  .pg-title{font-size:19px;}
+  .metrics{grid-template-columns:repeat(2,1fr) !important;gap:10px;}
+  .resumen-bar{grid-template-columns:repeat(2,1fr) !important;gap:8px;}
+  .hist-metrics{grid-template-columns:repeat(2,1fr) !important;}
+  .badges{gap:5px;}
+  .fg-row{grid-template-columns:1fr !important;}
+  .modal{width:92vw;max-width:92vw;padding:20px;max-height:85vh;}
+  .step-tabs{flex-wrap:wrap;}
+  .ctable-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px;}
+  .ctable{min-width:920px;}
+  .cal-grid,.cal-header{overflow-x:auto;}
+  .cal-day{min-height:60px;font-size:10px;padding:4px 5px;}
+  .cal-day-num{font-size:11px;}
+  .cal-event{font-size:9px;}
+  .lock-box{width:88vw;max-width:340px;}
+  .lock-hello{font-size:44px;}
+  .lock-logo{width:50px;height:50px;font-size:22px;}
+  .section-title,.sec-title{flex-wrap:wrap;gap:8px;}
+  .hon-card,.mono-card,.item,.pitem,.plan-card,.hist-card{flex-wrap:wrap;}
+  .mono-row{flex-direction:column;align-items:stretch;}
+  .mono-input-group{min-width:0;}
+}
+@media (max-width: 420px){
+  .lock-hello{font-size:36px;}
+  .metrics{grid-template-columns:1fr 1fr !important;}
+  .item-tag{font-size:10px;padding:3px 8px;}
+}
 </style>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -366,7 +428,14 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
 </div>
 
 <div class="app app-hidden" id="app-root">
-  <div class="sidebar">
+  <div class="mobile-topbar">
+    <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="mobile-topbar-title">Paglione Estudio Contable</div>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar-el">
     <div class="sb-header">
       <div class="sb-logo">Paglione Estudio Contable</div>
       <div class="sb-sub" id="sb-sub"></div>
@@ -396,6 +465,10 @@ body{font-family:var(--font-body);font-size:14px;line-height:1.55;color:var(--tx
       <button class="cb" id="btn-tareas" onclick="selectView('tareas')">
         <div class="cb-name">Tareas del estudio</div>
         <div class="cb-type" id="btn-tareas-sub">Pendientes sueltas</div>
+      </button>
+      <button class="cb" id="btn-guardias" onclick="selectView('guardias')">
+        <div class="cb-name">Facturacion de guardias</div>
+        <div class="cb-type">Distribuir por tope AFIP</div>
       </button>
     </div>
     <div class="sb-footer">
@@ -743,6 +816,7 @@ function ensureDefaults() {
   if (!S.cartera) S.cartera = JSON.parse(JSON.stringify(BASE_CLIENTS[1].carteraDefault));
   if (!S.historial) S.historial = [];
   if (!S.tareasSueltas) S.tareasSueltas = [];
+  if (!S.facturasGuardiasConfig) S.facturasGuardiasConfig = {hab:'', inh:'', limite:''};
   // Backfill requiereFactura/sociaId onto pre-existing cartera items
   S.cartera.forEach(function(c) {
     if (typeof c.requiereFactura === 'undefined') c.requiereFactura = true;
@@ -1806,6 +1880,133 @@ function renderTareas() {
   document.getElementById('main').innerHTML = h;
 }
 
+/* ============== FACTURACION DE GUARDIAS - distribucion por tope AFIP ============== */
+function parsearFechasGuardias(texto) {
+  var tokens = texto.trim().split(/[\n,;\s]+/);
+  var resultado = [];
+  tokens.forEach(function(t) {
+    t = t.trim();
+    var m = t.match(/^(\d{1,2})\/(\d{1,2})(\/(\d{2,4}))?$/);
+    if (m) {
+      var d = m[1].padStart(2,'0');
+      var mo = m[2].padStart(2,'0');
+      var y = m[4] || String(currentYear);
+      if (y.length === 2) y = '20'+y;
+      resultado.push(d+'/'+mo+'/'+y);
+    }
+  });
+  return resultado;
+}
+function ordenarFechasGuardias(items) {
+  return items.slice().sort(function(a,b) {
+    var pa = a.fecha.split('/'), pb = b.fecha.split('/');
+    var da = new Date(parseInt(pa[2]),parseInt(pa[1])-1,parseInt(pa[0]));
+    var db = new Date(parseInt(pb[2]),parseInt(pb[1])-1,parseInt(pb[0]));
+    return da-db;
+  });
+}
+function distribuirFacturasGuardias(items, limite) {
+  var facturas = [];
+  var actual = {items:[], total:0};
+  items.forEach(function(item) {
+    if (actual.total + item.monto > limite && actual.items.length) {
+      facturas.push(actual);
+      actual = {items:[], total:0};
+    }
+    actual.items.push(item);
+    actual.total += item.monto;
+  });
+  if (actual.items.length) facturas.push(actual);
+  return facturas;
+}
+function guardarConfigGuardias() {
+  S.facturasGuardiasConfig = {
+    hab: document.getElementById('gd-hab').value,
+    inh: document.getElementById('gd-inh').value,
+    limite: document.getElementById('gd-limite').value
+  };
+  save();
+}
+function generarFacturasGuardias() {
+  guardarConfigGuardias();
+  var montoHab = parseFloat(document.getElementById('gd-hab').value)||0;
+  var montoInh = parseFloat(document.getElementById('gd-inh').value)||0;
+  var limite = parseFloat(document.getElementById('gd-limite').value)||0;
+  var fechasHab = parsearFechasGuardias(document.getElementById('gd-fechas-hab').value);
+  var fechasInh = parsearFechasGuardias(document.getElementById('gd-fechas-inh').value);
+  var out = document.getElementById('gd-resultado');
+
+  if (!fechasHab.length && !fechasInh.length) {
+    out.innerHTML = '<div class="empty-state"><div class="empty-state-title">Sin fechas cargadas</div><div class="empty-state-desc">Pega las fechas de dias habiles y/o inhabiles para generar las facturas.</div></div>';
+    return;
+  }
+  if (!limite) {
+    out.innerHTML = '<div class="iva-stagnant">Indica el limite por factura para poder distribuir los montos.</div>';
+    return;
+  }
+
+  var items = [];
+  fechasHab.forEach(function(f){ items.push({fecha:f, tipo:'habil', monto:montoHab}); });
+  fechasInh.forEach(function(f){ items.push({fecha:f, tipo:'inhabil', monto:montoInh}); });
+  items = ordenarFechasGuardias(items);
+  var facturas = distribuirFacturasGuardias(items, limite);
+  var total = items.reduce(function(s,i){return s+i.monto;},0);
+
+  var h = '<div class="hon-total" style="margin-bottom:14px;"><div class="hon-total-label">Total general: '+fmt(total)+' - '+facturas.length+' factura'+(facturas.length!==1?'s':'')+'</div></div>';
+  facturas.forEach(function(factura, idx) {
+    var desc = factura.items.map(function(it){
+      return 'Guardia 24 hs dia '+it.tipo+' '+it.fecha+' - '+fmt(it.monto);
+    }).join('\n');
+    h += '<div class="plan-card" style="margin-bottom:10px;">';
+    h += '<div class="plan-hdr"><div class="plan-name">Factura '+(idx+1)+'</div><div class="plan-meta" style="font-family:var(--font-mono);font-weight:700;color:var(--tx);">'+fmt(factura.total)+'</div></div>';
+    h += '<textarea readonly id="gd-desc-'+idx+'" rows="'+factura.items.length+'" style="width:100%;font-family:var(--font-mono);font-size:12.5px;padding:10px 12px;border:1px solid var(--br);border-radius:var(--radius-sm);background:var(--bg2);color:var(--tx);resize:vertical;">'+desc+'</textarea>';
+    h += '<div style="text-align:right;margin-top:8px;"><button class="btn-sm" onclick="copiarFacturaGuardia('+idx+',this)">Copiar descripcion</button></div>';
+    h += '</div>';
+  });
+  out.innerHTML = h;
+  window._gdFacturas = facturas;
+}
+function copiarFacturaGuardia(idx, btnEl) {
+  var ta = document.getElementById('gd-desc-'+idx);
+  var texto = ta.value;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(function(){ flashCopied(btnEl); });
+  } else {
+    ta.removeAttribute('readonly');
+    ta.select();
+    try { document.execCommand('copy'); flashCopied(btnEl); } catch(e) {}
+    ta.setAttribute('readonly','readonly');
+  }
+}
+function flashCopied(btnEl) {
+  var original = btnEl.textContent;
+  btnEl.textContent = 'Copiado!';
+  setTimeout(function(){ btnEl.textContent = original; }, 1500);
+}
+function renderFacturacionGuardias() {
+  var cfg = S.facturasGuardiasConfig || {hab:'',inh:'',limite:''};
+  var h = backupBar();
+  h += '<div class="pg-title">Facturacion de guardias</div>';
+  h += '<div class="pg-meta" style="margin-bottom:16px;">Distribuye los montos de guardias medicas en facturas que no superen el tope que cargues, separando dias habiles e inhabiles.</div>';
+
+  h += '<div class="iva-card" style="max-width:760px;">';
+  h += '<div class="fg-row">';
+  h += '<div class="fg"><label>Monto dia habil ($)</label><input id="gd-hab" type="number" value="'+(cfg.hab||'')+'" onblur="guardarConfigGuardias()" placeholder="0"></div>';
+  h += '<div class="fg"><label>Monto dia inhabil ($)</label><input id="gd-inh" type="number" value="'+(cfg.inh||'')+'" onblur="guardarConfigGuardias()" placeholder="0"></div>';
+  h += '</div>';
+  h += '<div class="fg"><label>Limite por factura ($)</label><input id="gd-limite" type="number" value="'+(cfg.limite||'')+'" onblur="guardarConfigGuardias()" placeholder="0"></div>';
+  h += '<div class="fg-row">';
+  h += '<div class="fg"><label>Fechas dias habiles</label><textarea id="gd-fechas-hab" rows="5" placeholder="Pega las fechas separadas por coma, espacio o salto de linea (DD/MM o DD/MM/AAAA)"></textarea></div>';
+  h += '<div class="fg"><label>Fechas dias inhabiles</label><textarea id="gd-fechas-inh" rows="5" placeholder="Pega las fechas separadas por coma, espacio o salto de linea (DD/MM o DD/MM/AAAA)"></textarea></div>';
+  h += '</div>';
+  h += '<button class="btn-primary" onclick="generarFacturasGuardias()" style="width:100%;">Generar facturas</button>';
+  h += '</div>';
+
+  h += '<div class="section" style="margin-top:18px;max-width:760px;" id="gd-resultado-wrap"><div id="gd-resultado"></div></div>';
+
+  document.getElementById('main').innerHTML = h;
+}
+
 /* ============== CREDITO FISCAL IVA: saldo a favor mensual ============== */
 function ivaKey(cid,y,m) { return cid+'|iva|'+y+'-'+m; }
 function getIvaSaldo(cid,y,m) { var v = S[ivaKey(cid,y,m)]; return (v===undefined||v===null) ? null : v; }
@@ -2105,7 +2306,7 @@ function renderClient() {
     h += '<div class="rcard"><div class="rval amber">'+(car.length-cc)+'</div><div class="rlabel">Sin cobrar</div></div>';
     h += '</div>';
     h += '<div class="section"><div class="sec-title">Cartera - '+MONTHS[currentMonth]+' '+currentYear+(closed?' (cerrado)':'')+'<span><button class="btn-sm" onclick="exportCarteraReportePDF()">Exportar PDF</button>'+(closed?'':' <button class="btn-sm" onclick="openAdd()">+ Agregar</button>')+'</span></div>';
-    h += '<table class="ctable"><thead><tr><th>Cliente</th><th>Socia</th><th>Monto</th><th>Extra</th><th>Factura</th><th>Cobro al 10</th><th>Cobro al 15 (+5%)</th><th>Parcial</th><th>Estado</th><th>Recordatorio</th>'+(closed?'':'<th></th>')+'</tr></thead><tbody>';
+    h += '<div class="ctable-wrap"><table class="ctable"><thead><tr><th>Cliente</th><th>Socia</th><th>Monto</th><th>Extra</th><th>Factura</th><th>Cobro al 10</th><th>Cobro al 15 (+5%)</th><th>Parcial</th><th>Estado</th><th>Recordatorio</th>'+(closed?'':'<th></th>')+'</tr></thead><tbody>';
     var totalBase=0, totalExtra=0;
     car.forEach(function(c) {
       var fc=!!S[ck(cid,currentMonth,currentYear,c.id,'fact')];
@@ -2143,7 +2344,7 @@ function renderClient() {
       '</tr>';
     });
     h += '<tr class="trow"><td>Total</td><td></td><td>'+fmt(totalBase)+'</td><td>'+fmt(totalExtra)+'</td><td style="text-align:center;font-weight:400;font-size:11px">'+cf+'/'+carConFactura.length+'</td><td colspan="2" style="text-align:center;font-weight:400;font-size:11px">'+cc+' cobrados</td><td></td><td><strong>'+fmt(totalCob)+'</strong></td><td></td>'+(closed?'':'<td></td>')+'</tr>';
-    h += '</tbody></table></div>';
+    h += '</tbody></table></div></div>';
   }
 
   if(cl.pend && cl.pend.length) {
@@ -2200,6 +2401,11 @@ function renderClient() {
   // Credito fiscal IVA (si esta activado para este cliente)
   if (cl.creditoIvaActivo) {
     h += renderCreditoIvaSection(cl, cid, closed);
+  }
+
+  // Acceso rapido a la distribucion de facturas de guardias (especifico de Nacho)
+  if (cid === 'nacho') {
+    h += '<div class="ipc-alert"><span>Cuando te mande la lista de guardias por WhatsApp, usa la herramienta de facturacion de guardias para distribuir los montos respetando el tope por factura.</span><button class="btn-sm" onclick="selectView(\'guardias\')">Abrir herramienta</button></div>';
   }
 
   document.getElementById('main').innerHTML = h;
@@ -2372,6 +2578,7 @@ function render() {
   document.getElementById('btn-intereses').className = 'cb'+(activeView==='intereses'?' active':'');
   document.getElementById('btn-ipcupdate').className = 'cb'+(activeView==='ipcupdate'?' active':'');
   document.getElementById('btn-tareas').className = 'cb'+(activeView==='tareas'?' active':'');
+  document.getElementById('btn-guardias').className = 'cb'+(activeView==='guardias'?' active':'');
   var tareasPend = (S.tareasSueltas||[]).filter(function(t){return !t.done;}).length;
   document.getElementById('btn-tareas-sub').textContent = tareasPend>0 ? tareasPend+' pendiente'+(tareasPend!==1?'s':'') : 'Sin pendientes';
   var closed = isClosed(currentMonth,currentYear);
@@ -2383,6 +2590,7 @@ function render() {
   else if(activeView==='intereses') renderIntereses();
   else if(activeView==='ipcupdate') renderIpcUpdate();
   else if(activeView==='tareas') renderTareas();
+  else if(activeView==='guardias') renderFacturacionGuardias();
   else renderClient();
   retriggerViewAnimation();
 }
@@ -2394,8 +2602,17 @@ function retriggerViewAnimation() {
   m.classList.add('view-enter');
 }
 
-function selectClient(i) { activeClient=i; activeView='client'; render(); }
-function selectView(v) { activeView=v; render(); }
+function selectClient(i) { activeClient=i; activeView='client'; render(); closeSidebar(); }
+function selectView(v) { activeView=v; render(); closeSidebar(); }
+function toggleSidebar() {
+  document.getElementById('sidebar-el').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  if (window.innerWidth > 860) return;
+  document.getElementById('sidebar-el').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
 function changeMonth(d) {
   currentMonth += d;
   if(currentMonth>11){currentMonth=0;currentYear++;}
